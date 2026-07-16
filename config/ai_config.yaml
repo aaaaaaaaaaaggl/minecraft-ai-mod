@@ -1,0 +1,65 @@
+# Конфигурация Minecraft AI Plugin
+
+# Подключение к AI серверу
+ai_server:
+  url: "http://localhost:5000"
+  timeout: 5000  # миллисекунды
+  retry_attempts: 3
+  retry_delay: 1000  # миллисекунды
+
+# Параметры AI
+ai_settings:
+  enabled: true
+  min_confidence: 0.7  # Минимальная уверенность для выполнения действия
+  check_interval: 20   # Интервал проверки в тиках (20 = 1 сек)
+  max_actions_per_tick: 5  # Максимум действий за тик
+
+# Типы действий
+actions:
+  build_structure:
+    enabled: true
+    cooldown: 5000  # миллисекунды
+    max_height: 20
+    types:
+      - tower
+      - house
+      - bridge
+  
+  spawn_mob:
+    enabled: true
+    cooldown: 3000
+    max_count: 10
+    types:
+      - zombie
+      - skeleton
+      - creeper
+  
+  generate_ore:
+    enabled: true
+    cooldown: 5000
+    max_vein_size: 50
+    types:
+      - diamond
+      - gold
+      - iron
+
+# Логирование
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "logs/ai-mod.log"
+  max_file_size: 10485760  # 10 MB
+  max_backups: 5
+
+# Производительность
+performance:
+  async_processing: true
+  thread_pool_size: 4
+  cache_enabled: true
+  cache_ttl: 60000  # миллисекунды
+
+# Безопасность
+security:
+  validate_coordinates: true
+  max_build_distance: 100
+  whitelist_enabled: false
+  whitelist_players: []

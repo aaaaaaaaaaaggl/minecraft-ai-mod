@@ -1,0 +1,54 @@
+# Python
+python/__pycache__/
+python/*.py[cod]
+python/*.so
+python/venv/
+python/env/
+python/.venv/
+python/model.h5
+python/training_history.json
+python/*.egg-info
+python/dist/
+python/build/
+
+# Java
+java/target/
+java/.classpath
+java/.project
+java/.settings/
+java/bin/
+java/*.jar
+java/*.war
+java/dependency-reduced-pom.xml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Cache
+.cache/
+*.cache
+
+# Minecraft
+*.jar
+*.zip
+mods/
+crash-reports/
