@@ -12,8 +12,8 @@ python/dist/
 python/build/
 
 # Java
-java/target/
-!java/target/ai-mod-1.0.0.jar
+java/target/**
+!java/target/ai-mod-*.jar
 java/.classpath
 java/.project
 java/.settings/
