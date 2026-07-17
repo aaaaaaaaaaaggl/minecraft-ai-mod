@@ -44,9 +44,11 @@ public class ChatCommandListener implements Listener {
             message.startsWith("помощь") || message.startsWith("ПОМОЩЬ")) {
             
             // Убрать префикс если есть
-            String command = message;
+            final String command;
             if (message.toLowerCase().startsWith("ai ")) {
                 command = message.substring(3);
+            } else {
+                command = message;
             }
             
             // Отправить на обработку асинхронно
@@ -75,9 +77,9 @@ public class ChatCommandListener implements Listener {
             if (response != null) {
                 if (response.success) {
                     // Отправить ответ игроку
-                    String message = response.message;
-                    if (message != null && !message.isEmpty()) {
-                        player.sendMessage(message);
+                    String responseMessage = response.message;
+                    if (responseMessage != null && !responseMessage.isEmpty()) {
+                        player.sendMessage(responseMessage);
                     }
                     
                     // Выполнить действие если нужно
