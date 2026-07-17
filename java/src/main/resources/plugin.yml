@@ -1,0 +1,19 @@
+name: MinecraftAI
+version: 1.0.0
+description: AI Chat Server для Minecraft
+author: aaaaaaaaaaaggl
+main: com.minecraft.ai.MinecraftAIPlugin
+
+commands:
+  ai:
+    description: AI команды
+    usage: /ai <enable|disable|status|help>
+    aliases: [ai-cmd]
+
+permissions:
+  minecraft.ai.use:
+    description: Разрешить использование AI команд
+    default: true
+  minecraft.ai.admin:
+    description: Администраторские команды AI
+    default: op
