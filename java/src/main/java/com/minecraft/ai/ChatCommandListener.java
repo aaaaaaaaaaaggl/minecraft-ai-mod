@@ -19,10 +19,10 @@ public class ChatCommandListener implements Listener {
     
     private static final Logger LOGGER = Logger.getLogger("ChatCommandListener");
     private final JavaPlugin plugin;
-    private final AIApiClient apiClient;
+    private final AIApiClient_Updated apiClient;
     private final Gson gson;
     
-    public ChatCommandListener(JavaPlugin plugin, AIApiClient apiClient) {
+    public ChatCommandListener(JavaPlugin plugin, AIApiClient_Updated apiClient) {
         this.plugin = plugin;
         this.apiClient = apiClient;
         this.gson = new Gson();
@@ -44,10 +44,7 @@ public class ChatCommandListener implements Listener {
             message.startsWith("помощь") || message.startsWith("ПОМОЩЬ")) {
             
             // Убрать префикс если есть
-            String command = message;
-            if (message.toLowerCase().startsWith("ai ")) {
-                command = message.substring(3);
-            }
+            final String command = message.toLowerCase().startsWith("ai ") ? message.substring(3) : message;
             
             // Отправить на обработку асинхронно
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -70,7 +67,7 @@ public class ChatCommandListener implements Listener {
             json.addProperty("z", player.getLocation().getZ());
             
             // Отправить на AI сервер
-            AIApiClient.ChatCommandResponse response = apiClient.processChatCommand(json);
+            AIApiClient_Updated.ChatCommandResponse response = apiClient.processChatCommand(json);
             
             if (response != null) {
                 if (response.success) {
@@ -82,8 +79,6 @@ public class ChatCommandListener implements Listener {
                     
                     // Выполнить действие если нужно
                     executeAction(player, response);
-                    
-                    LOGGER.info("✅ Команда выполнена для " + player.getName() + ": " + response.action);
                 } else {
                     player.sendMessage(response.message != null ? response.message : 
                                      "§c❌ Ошибка обработки команды");
@@ -103,7 +98,7 @@ public class ChatCommandListener implements Listener {
     /**
      * Выполнить действие на основе ответа AI
      */
-    private void executeAction(Player player, AIApiClient.ChatCommandResponse response) {
+    private void executeAction(Player player, AIApiClient_Updated.ChatCommandResponse response) {
         if (response.action == null) return;
         
         switch (response.action) {
@@ -130,7 +125,7 @@ public class ChatCommandListener implements Listener {
     /**
      * Выполнить построение
      */
-    private void executeBuild(Player player, AIApiClient.ChatCommandResponse response) {
+    private void executeBuild(Player player, AIApiClient_Updated.ChatCommandResponse response) {
         try {
             String structureType = (String) response.getProperty("structure_type");
             Integer height = ((Number) response.getProperty("height")).intValue();
@@ -150,7 +145,7 @@ public class ChatCommandListener implements Listener {
     /**
      * Выполнить призыв моба
      */
-    private void executeSpawn(Player player, AIApiClient.ChatCommandResponse response) {
+    private void executeSpawn(Player player, AIApiClient_Updated.ChatCommandResponse response) {
         try {
             String mobType = (String) response.getProperty("mob_type");
             Integer count = ((Number) response.getProperty("count")).intValue();
@@ -169,7 +164,7 @@ public class ChatCommandListener implements Listener {
     /**
      * Выполнить генерацию руды
      */
-    private void executeGenerate(Player player, AIApiClient.ChatCommandResponse response) {
+    private void executeGenerate(Player player, AIApiClient_Updated.ChatCommandResponse response) {
         try {
             String oreType = (String) response.getProperty("ore_type");
             Integer veinSize = ((Number) response.getProperty("vein_size")).intValue();
@@ -188,7 +183,7 @@ public class ChatCommandListener implements Listener {
     /**
      * Выполнить команду помощи
      */
-    private void executeHelp(Player player, AIApiClient.ChatCommandResponse response) {
+    private void executeHelp(Player player, AIApiClient_Updated.ChatCommandResponse response) {
         String message = response.message;
         if (message != null) {
             String[] lines = message.split("\\n");
@@ -203,7 +198,7 @@ public class ChatCommandListener implements Listener {
     /**
      * Выполнить команду статуса
      */
-    private void executeStatus(Player player, AIApiClient.ChatCommandResponse response) {
+    private void executeStatus(Player player, AIApiClient_Updated.ChatCommandResponse response) {
         String message = response.message;
         if (message != null) {
             player.sendMessage("§b" + message);

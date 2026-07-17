@@ -13,6 +13,7 @@ python/build/
 
 # Java
 java/target/
+!java/target/ai-mod-1.0.0.jar
 java/.classpath
 java/.project
 java/.settings/
@@ -48,7 +49,6 @@ logs/
 *.cache
 
 # Minecraft
-*.jar
 *.zip
 mods/
 crash-reports/
