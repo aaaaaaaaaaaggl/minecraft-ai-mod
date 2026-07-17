@@ -30,6 +30,8 @@ minecraft-ai-mod/
 │   └── pom.xml               # Maven конфигурация
 ├── config/
 │   └── ai_config.yaml        # Конфигурация
+├── html-game/
+│   └── index.html            # HTML5 игра «Змейка»
 └── SETUP.md                  # Инструкция по установке
 ```
 
@@ -59,6 +61,10 @@ mvn clean package
 1. Скопируйте JAR файл в папку `plugins` сервера
 2. Перезагрузите сервер
 3. Используйте команду `/ai status`
+
+### 4. Запуск HTML игры
+
+Откройте `html-game/index.html` в браузере — дополнительных зависимостей не требуется.
 
 ## 📡 API Endpoints
 
