@@ -1,0 +1,37 @@
+# Конфигурация Minecraft AI Plugin
+
+ai-server:
+  # URL AI сервера Python
+  url: http://localhost:5000
+  # Timeout подключения в секундах
+  timeout: 5
+
+# Настройки плагина
+plugin:
+  # Включен ли AI по умолчанию
+  enabled: true
+  # Отправлять логи в консоль
+  debug: true
+
+# Команды в чате, которые понимает AI
+chat-commands:
+  build:
+    - "строй"
+    - "build"
+    - "постройте"
+  spawn:
+    - "призови"
+    - "spawn"
+    - "создай"
+  generate:
+    - "генерируй"
+    - "generate"
+    - "копай"
+  help:
+    - "помощь"
+    - "help"
+    - "команды"
+  status:
+    - "статус"
+    - "status"
+    - "как дела"
