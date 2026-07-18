@@ -89,11 +89,11 @@ def handle_chat():
         
         # Simple command dispatch with action-specific parameters
         message_lower = message.lower()
-        
+        extra = {}
+
         if "помощь" in message_lower or "help" in message_lower:
             action = "help"
             response_msg = "§6=== AI Помощь ===\n§aДоступные команды:\n§e- строй дом\n§e- строй башню\n§e- строй мост\n§e- призови зомби\n§e- призови скелета\n§e- призови крипера\n§e- генерируй алмазы\n§e- генерируй золото\n§e- генерируй железо"
-            extra = {}
         elif "строй" in message_lower or "build" in message_lower:
             action = "build_structure"
             if "башн" in message_lower or "tower" in message_lower:
@@ -136,7 +136,6 @@ def handle_chat():
         else:
             action = "unknown"
             response_msg = "§c❌ Команда не распознана. Напиши 'помощь'"
-            extra = {}
         
         result = {
             "success": True,

@@ -146,7 +146,7 @@ public class ActionExecutor {
             }
         }
 
-        // Door opening (front wall, centre)
+        // Door opening (front wall, center)
         world.getBlockAt(px, py + 1, pz - 2).setType(Material.AIR);
         world.getBlockAt(px, py + 2, pz - 2).setType(Material.AIR);
 

@@ -199,9 +199,10 @@ public class AIApiClient {
 
             // Also read action-specific fields from the top-level JSON so that
             // callers can use getProperty("structure_type") etc. without a "data" wrapper.
+            java.util.Set<String> topLevelExclusions = new java.util.HashSet<>(
+                    java.util.Arrays.asList("success", "message", "action"));
             for (String key : json.keySet()) {
-                if (!key.equals("success") && !key.equals("message") && !key.equals("action")
-                        && !properties.containsKey(key)) {
+                if (!topLevelExclusions.contains(key) && !properties.containsKey(key)) {
                     properties.put(key, json.get(key));
                 }
             }
