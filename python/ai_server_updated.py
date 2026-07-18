@@ -139,10 +139,10 @@ def predict():
         print(f"❌ Ошибка в /predict: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/chat/command', methods=['POST'])
-def handle_chat_command():
+@app.route('/chat', methods=['POST'])
+def handle_chat():
     """
-    Обработать команду из чата
+    Основной endpoint для обработки команд чата из Java плагина
     
     JSON body:
     {
@@ -187,8 +187,24 @@ def handle_chat_command():
         return jsonify(result), 200
         
     except Exception as e:
-        print(f"❌ Ошибка в /chat/command: {e}")
+        print(f"❌ Ошибка в /chat: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/chat/command', methods=['POST'])
+def handle_chat_command():
+    """
+    Обработать команду из чата (совместимость)
+    
+    JSON body:
+    {
+        "player_name": "PlayerName",
+        "message": "строй дом",
+        "x": 100,
+        "y": 64,
+        "z": 200
+    }
+    """
+    return handle_chat()
 
 @app.route('/chat/broadcast', methods=['POST'])
 def broadcast_message():
@@ -256,7 +272,8 @@ def info():
         "version": "2.0.0",
         "endpoints": [
             "/health - Проверка статуса",
-            "/chat/command - Обработка команд из чата",
+            "/chat - Обработка команд из чата",
+            "/chat/command - Обработка команд из чата (совместимость)",
             "/chat/broadcast - Отправка сообщения всем",
             "/ai/enable - Включить AI",
             "/ai/disable - Выключить AI",
