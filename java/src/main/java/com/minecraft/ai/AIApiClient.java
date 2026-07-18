@@ -190,13 +190,20 @@ public class AIApiClient {
             this.message = json.has("message") ? json.get("message").getAsString() : null;
             this.action = json.has("action") ? json.get("action").getAsString() : null;
             this.properties = new HashMap<>();
-            
-            // Парсим дополнительные свойства
+
+            // Populate properties from a nested "data" object if present
             if (json.has("data")) {
                 JsonObject data = json.getAsJsonObject("data");
-                data.keySet().forEach(key -> {
-                    properties.put(key, data.get(key));
-                });
+                data.keySet().forEach(key -> properties.put(key, data.get(key)));
+            }
+
+            // Also read action-specific fields from the top-level JSON so that
+            // callers can use getProperty("structure_type") etc. without a "data" wrapper.
+            for (String key : json.keySet()) {
+                if (!key.equals("success") && !key.equals("message") && !key.equals("action")
+                        && !properties.containsKey(key)) {
+                    properties.put(key, json.get(key));
+                }
             }
         }
         

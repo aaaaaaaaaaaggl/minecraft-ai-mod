@@ -10,6 +10,7 @@ public class MinecraftAIPlugin extends JavaPlugin {
     
     private static final Logger LOGGER = Logger.getLogger("MinecraftAI");
     private AIApiClient apiClient;
+    private ActionExecutor actionExecutor;
     private ChatCommandListener chatListener;
     
     @Override
@@ -26,8 +27,9 @@ public class MinecraftAIPlugin extends JavaPlugin {
         LOGGER.info("🔗 AI сервер URL: " + apiUrl);
         LOGGER.info("⏱️  Timeout: " + timeout + " сек");
         
-        // Создать API клиент
+        // Создать API клиент и исполнитель действий
         apiClient = new AIApiClient(apiUrl, this);
+        actionExecutor = new ActionExecutor(this);
         
         // Проверить подключение к серверу
         if (apiClient.checkHealth()) {
@@ -38,7 +40,7 @@ public class MinecraftAIPlugin extends JavaPlugin {
         }
         
         // Зарегистрировать слушателя событий
-        chatListener = new ChatCommandListener(this, apiClient);
+        chatListener = new ChatCommandListener(this, apiClient, actionExecutor);
         getServer().getPluginManager().registerEvents(chatListener, this);
         
         // Зарегистрировать команды
@@ -50,9 +52,6 @@ public class MinecraftAIPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         LOGGER.info("❌ Minecraft AI плагин отключается...");
-        if (apiClient != null) {
-            // Здесь можно добавить логику очистки
-        }
         LOGGER.info("❌ Minecraft AI плагин выгружен");
     }
     
@@ -60,7 +59,6 @@ public class MinecraftAIPlugin extends JavaPlugin {
      * Зарегистрировать команды плагина
      */
     private void registerCommands() {
-        // Команда /ai help
         if (getCommand("ai") != null) {
             getCommand("ai").setExecutor((sender, cmd, label, args) -> {
                 if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
@@ -101,5 +99,12 @@ public class MinecraftAIPlugin extends JavaPlugin {
      */
     public AIApiClient getApiClient() {
         return apiClient;
+    }
+
+    /**
+     * Получить исполнитель действий
+     */
+    public ActionExecutor getActionExecutor() {
+        return actionExecutor;
     }
 }
