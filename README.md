@@ -41,7 +41,7 @@ minecraft-ai-mod/
 cd python
 pip install -r requirements.txt
 python model_trainer.py      # Опционально: обучить модель
-python ai_server.py          # Запустить сервер
+python ai_server_updated2.0.py          # Запустить сервер
 ```
 
 Сервер запустится на `http://localhost:5000`
@@ -63,7 +63,7 @@ mvn clean package
 ## 📡 API Endpoints
 
 ### GET `/health`
-Проверка стат��са сервера.
+Проверка статуса сервера.
 
 ```bash
 curl http://localhost:5000/health
@@ -127,7 +127,7 @@ curl http://localhost:5000/info
 ## 🎮 Minecraft команды
 
 ```
-/ai status                    # Статус AI ��ервера
+/ai status                    # Статус AI сервера
 /ai enable                    # Включить AI
 /ai disable                   # Выключить AI
 /ai build <type>             # Заказать построение
@@ -140,6 +140,7 @@ curl http://localhost:5000/info
 - **Minecraft:** 1.19+
 - **TensorFlow:** 2.x
 - **Spigot/Paper:** для сервера
+- по умолчанию Spigot
 
 ## 🔧 Конфигурация
 
