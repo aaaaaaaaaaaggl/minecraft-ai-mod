@@ -16,18 +16,24 @@ import java.util.logging.Logger;
  * Обрабатывает сообщения игроков и отправляет их AI
  */
 public class ChatCommandListener implements Listener {
-    
+
+    /** Chat prefix that triggers AI processing (includes trailing space). */
+    private static final String AI_PREFIX = "ai ";
+
     private static final Logger LOGGER = Logger.getLogger("ChatCommandListener");
     private final JavaPlugin plugin;
     private final AIApiClient apiClient;
     private final ActionExecutor actionExecutor;
+    private final AIPlayerManager aiPlayerManager;
     private final Gson gson;
     
     public ChatCommandListener(JavaPlugin plugin, AIApiClient apiClient,
-                               ActionExecutor actionExecutor) {
+                               ActionExecutor actionExecutor,
+                               AIPlayerManager aiPlayerManager) {
         this.plugin = plugin;
         this.apiClient = apiClient;
         this.actionExecutor = actionExecutor;
+        this.aiPlayerManager = aiPlayerManager;
         this.gson = new Gson();
     }
     
@@ -40,17 +46,41 @@ public class ChatCommandListener implements Listener {
         String message = event.getMessage();
         
         // Проверить, является ли это командой AI (требуется префикс "ai ")
-        if (message.toLowerCase().startsWith("ai ")) {
+        if (message.toLowerCase().startsWith(AI_PREFIX)) {
             
             // Убрать префикс "ai "
-            final String command;
-            command = message.substring(3);
+            final String command = message.substring(AI_PREFIX.length()).trim();
             
-            // Отправить на обработку асинхронно
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                processAIChatCommand(player, command);
-            });
+            if (isLocalAICommand(command)) {
+                // Команды AI-игрока выполняются локально на главном потоке
+                Bukkit.getScheduler().runTask(plugin, () ->
+                        aiPlayerManager.commandAI(command, player));
+            } else {
+                // Остальные команды отправляются на Python-сервер асинхронно
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
+                        processAIChatCommand(player, command));
+            }
         }
+    }
+
+    /**
+     * Возвращает true, если команда должна обрабатываться локально
+     * менеджером AI-игрока, а не отправляться на Python-сервер.
+     */
+    private boolean isLocalAICommand(String command) {
+        String lower = command.toLowerCase();
+        return lower.equals("появись")
+                || lower.equals("spawn")
+                || lower.equals("уходи")
+                || lower.equals("despawn")
+                || lower.equals("строй дом")
+                || lower.equals("build house")
+                || lower.equals("следуй за мной")
+                || lower.equals("follow")
+                || lower.equals("призови всех")
+                || lower.equals("summon all")
+                || lower.startsWith("добывай ")
+                || lower.startsWith("mine ");
     }
     
     /**
