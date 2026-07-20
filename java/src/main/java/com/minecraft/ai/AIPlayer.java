@@ -45,6 +45,12 @@ public class AIPlayer {
     /** Speed multiplier for each follow step (blocks per tick). */
     private static final double FOLLOW_STEP_SIZE = 0.8;
 
+    /**
+     * Extra distance added to the movement vector to prevent the AI
+     * from overshooting and oscillating around the target.
+     */
+    private static final double FOLLOW_OVERSHOOT_BUFFER = 0.5;
+
     private final JavaPlugin plugin;
     private final ActionExecutor actionExecutor;
 
@@ -179,9 +185,11 @@ public class AIPlayer {
                 if (dist > FOLLOW_CLOSE_DISTANCE) {
                     Vector dir = targetLoc.toVector().subtract(aiLoc.toVector());
                     if (dir.length() > 0) {
-                        dir.normalize().multiply(Math.min(FOLLOW_STEP_SIZE, dist - FOLLOW_CLOSE_DISTANCE + 0.5));
+                        dir.normalize().multiply(Math.min(FOLLOW_STEP_SIZE, dist - FOLLOW_CLOSE_DISTANCE + FOLLOW_OVERSHOOT_BUFFER));
                         Location next = aiLoc.clone().add(dir);
-                        next.setY(target.getWorld().getHighestBlockYAt(next));
+                        // Use the player's actual Y to follow them inside buildings,
+                        // underground, or on ledges — not the surface height.
+                        next.setY(targetLoc.getY());
                         next.setYaw(targetLoc.getYaw());
                         stand.teleport(next);
                     }
