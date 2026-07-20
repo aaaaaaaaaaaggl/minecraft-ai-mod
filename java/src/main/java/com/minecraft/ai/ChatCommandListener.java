@@ -16,21 +16,23 @@ import java.util.logging.Logger;
  * Обрабатывает сообщения игроков и отправляет их AI
  */
 public class ChatCommandListener implements Listener {
-    
+
     private static final Logger LOGGER = Logger.getLogger("ChatCommandListener");
     private final JavaPlugin plugin;
     private final AIApiClient apiClient;
     private final ActionExecutor actionExecutor;
+    private final AIPlayer aiPlayer;
     private final Gson gson;
-    
+
     public ChatCommandListener(JavaPlugin plugin, AIApiClient apiClient,
-                               ActionExecutor actionExecutor) {
+                               ActionExecutor actionExecutor, AIPlayer aiPlayer) {
         this.plugin = plugin;
         this.apiClient = apiClient;
         this.actionExecutor = actionExecutor;
+        this.aiPlayer = aiPlayer;
         this.gson = new Gson();
     }
-    
+
     /**
      * Обработать сообщение в чате
      */
@@ -38,21 +40,20 @@ public class ChatCommandListener implements Listener {
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
         String message = event.getMessage();
-        
+
         // Проверить, является ли это командой AI (требуется префикс "ai ")
         if (message.toLowerCase().startsWith("ai ")) {
-            
+
             // Убрать префикс "ai "
-            final String command;
-            command = message.substring(3);
-            
+            final String command = message.substring(3);
+
             // Отправить на обработку асинхронно
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                 processAIChatCommand(player, command);
             });
         }
     }
-    
+
     /**
      * Обработать команду AI (выполняется в async thread)
      */
@@ -65,20 +66,20 @@ public class ChatCommandListener implements Listener {
             json.addProperty("x", player.getLocation().getX());
             json.addProperty("y", player.getLocation().getY());
             json.addProperty("z", player.getLocation().getZ());
-            
+
             // Отправить на AI сервер
             AIApiClient.ChatCommandResponse response = apiClient.processChatCommand(json);
-            
+
             if (response != null) {
                 if (response.success) {
                     // Показать ответное сообщение игроку
                     if (response.message != null && !response.message.isEmpty()) {
                         player.sendMessage(response.message);
                     }
-                    
+
                     // Выполнить действие на главном потоке сервера
                     executeAction(player, response);
-                    
+
                     LOGGER.info("✅ Команда выполнена для " + player.getName()
                             + ": " + response.action);
                 } else {
@@ -91,19 +92,19 @@ public class ChatCommandListener implements Listener {
                 player.sendMessage("§cОшибка подключения к AI серверу");
                 LOGGER.warning("❌ Не удалось получить ответ от AI сервера");
             }
-            
+
         } catch (Exception e) {
             player.sendMessage("§c⚠️  Ошибка обработки команды: " + e.getMessage());
             LOGGER.warning("❌ Ошибка обработки команды: " + e.getMessage());
         }
     }
-    
+
     /**
      * Диспетчер действий — перенаправляет на главный поток для Bukkit-операций
      */
     private void executeAction(Player player, AIApiClient.ChatCommandResponse response) {
         if (response.action == null) return;
-        
+
         switch (response.action) {
             case "build_structure":
                 Bukkit.getScheduler().runTask(plugin,
@@ -117,6 +118,26 @@ public class ChatCommandListener implements Listener {
                 Bukkit.getScheduler().runTask(plugin,
                         () -> executeGenerate(player, response));
                 break;
+            case "ai_join":
+                Bukkit.getScheduler().runTask(plugin, () -> aiPlayer.join(player));
+                break;
+            case "ai_leave":
+                Bukkit.getScheduler().runTask(plugin, () -> aiPlayer.leave());
+                break;
+            case "mine_blocks":
+                Bukkit.getScheduler().runTask(plugin,
+                        () -> executeMine(player, response));
+                break;
+            case "follow_player":
+                Bukkit.getScheduler().runTask(plugin, () -> aiPlayer.follow(player));
+                break;
+            case "stop_follow":
+                Bukkit.getScheduler().runTask(plugin, () -> aiPlayer.stopFollow(player));
+                break;
+            case "gather_blocks":
+                Bukkit.getScheduler().runTask(plugin,
+                        () -> executeGather(player, response));
+                break;
             case "help":
                 executeHelp(player, response);
                 break;
@@ -127,7 +148,7 @@ public class ChatCommandListener implements Listener {
                 break;
         }
     }
-    
+
     /**
      * Выполнить построение (главный поток)
      */
@@ -140,7 +161,7 @@ public class ChatCommandListener implements Listener {
             LOGGER.warning("Ошибка при построении: " + e.getMessage());
         }
     }
-    
+
     /**
      * Выполнить призыв моба (главный поток)
      */
@@ -154,7 +175,7 @@ public class ChatCommandListener implements Listener {
             LOGGER.warning("Ошибка при призыве моба: " + e.getMessage());
         }
     }
-    
+
     /**
      * Выполнить генерацию руды (главный поток)
      */
@@ -168,7 +189,34 @@ public class ChatCommandListener implements Listener {
             LOGGER.warning("Ошибка при генерации руды: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Выполнить добычу блоков AI игроком (главный поток)
+     */
+    private void executeMine(Player player, AIApiClient.ChatCommandResponse response) {
+        try {
+            int radius = getIntProperty(response, "radius", 5);
+            aiPlayer.mine(player, radius);
+        } catch (Exception e) {
+            player.sendMessage("§c❌ Ошибка при добыче: " + e.getMessage());
+            LOGGER.warning("Ошибка при добыче: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Выполнить сбор блоков AI игроком (главный поток)
+     */
+    private void executeGather(Player player, AIApiClient.ChatCommandResponse response) {
+        try {
+            String blockType = getStringProperty(response, "block_type", "stone");
+            int radius = getIntProperty(response, "radius", 8);
+            aiPlayer.gather(player, blockType, radius);
+        } catch (Exception e) {
+            player.sendMessage("§c❌ Ошибка при сборе: " + e.getMessage());
+            LOGGER.warning("Ошибка при сборе: " + e.getMessage());
+        }
+    }
+
     /**
      * Вывести подсказку
      */
@@ -182,7 +230,7 @@ public class ChatCommandListener implements Listener {
             }
         }
     }
-    
+
     /**
      * Вывести статус
      */

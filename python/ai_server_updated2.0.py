@@ -155,6 +155,38 @@ class ConversationAI:
                     "Договорились! Скажи что нужно! ⚡",
                 ]
             },
+            {
+                "keywords": ["появись", "зайди", "войди", "присоединись"],
+                "responses": [
+                    "Уже захожу! Напиши 'ai появись' и я появлюсь рядом с тобой! 🤖",
+                    "Готов присоединиться к серверу! Напиши 'ai появись'! 🎮",
+                    "Хочешь чтобы я зашёл? Пиши 'ai появись' — я буду рядом! ⚡",
+                ]
+            },
+            {
+                "keywords": ["добывай", "копай", "добыть", "шахта", "добыча"],
+                "responses": [
+                    "Могу добывать блоки! Напиши 'ai добывай' и я начну! ⛏️",
+                    "Готов к добыче! 'ai добывай камень' — и вперёд! 🪨",
+                    "Умею добывать камень, уголь, железо, золото, алмазы! Напиши 'ai добывай алмаз'! 💎",
+                ]
+            },
+            {
+                "keywords": ["следуй", "иди за мной", "ходи за мной", "пойдём"],
+                "responses": [
+                    "Готов следовать за тобой! Напиши 'ai следуй' — и я рядом! 🏃",
+                    "Буду идти за тобой куда угодно! 'ai следуй' — и поехали! 😊",
+                    "Могу следовать за тобой! Напиши команду 'ai следуй'! ⚡",
+                ]
+            },
+            {
+                "keywords": ["особняк", "mansion", "дворец", "замок большой"],
+                "responses": [
+                    "Могу построить огромный двухэтажный особняк с крышей! Напиши 'ai строй особняк'! 🏰",
+                    "Особняк — моя гордость! Два этажа, крыша из тёмного дуба, окна! 'ai строй особняк'! ✨",
+                    "Строю лучший особняк в Minecraft! Напиши 'ai строй особняк'! 🏠",
+                ]
+            },
         ]
 
         # Общие ответы когда паттерн не найден
@@ -302,17 +334,85 @@ def handle_chat():
 
         if "помощь" in message_lower or "help" in message_lower:
             action = "help"
-            response_msg = "§6=== AI Помощь ===\n§aДоступные команды:\n§e- строй дом\n§e- строй башню\n§e- строй мост\n§e- призови зомби\n§e- призови скелета\n§e- призови крипера\n§e- генерируй алмазы\n§e- генерируй золото\n§e- генерируй железо"
+            response_msg = (
+                "§6=== AI Помощь ===\n"
+                "§aАI Игрок:\n"
+                "§e- появись / join          §7→ AI заходит на сервер\n"
+                "§e- уйди / leave            §7→ AI уходит с сервера\n"
+                "§e- следуй / follow         §7→ AI следует за тобой\n"
+                "§e- стоп / stop             §7→ AI останавливается\n"
+                "§e- добывай [радиус]        §7→ AI добывает блоки\n"
+                "§e- собирай [тип блока]     §7→ AI собирает конкретный блок\n"
+                "§aПостройки:\n"
+                "§e- строй дом / башню / мост / особняк\n"
+                "§aМобы и ресурсы:\n"
+                "§e- призови зомби / скелета / крипера\n"
+                "§e- генерируй алмазы / золото / железо"
+            )
+
+        elif "появись" in message_lower or message_lower.strip() == "join":
+            action = "ai_join"
+            response_msg = "§b🤖 AI_Игрок присоединяется к серверу..."
+
+        elif "уйди" in message_lower or "выйди" in message_lower or message_lower.strip() == "leave":
+            action = "ai_leave"
+            response_msg = "§b🤖 AI_Игрок покидает сервер..."
+
+        elif "добывай" in message_lower or "добывать" in message_lower or "копай" in message_lower:
+            action = "mine_blocks"
+            radius = 5
+            for word in message_lower.split():
+                if word.isdigit():
+                    radius = max(1, min(int(word), 10))
+                    break
+            response_msg = f"§b🤖 AI_Игрок начинает добычу в радиусе {radius} блоков... ⛏️"
+            extra = {"radius": radius}
+
+        elif "следуй" in message_lower or "иди за" in message_lower or "follow" in message_lower:
+            action = "follow_player"
+            response_msg = "§b🤖 AI_Игрок следует за тобой! 🏃"
+
+        elif ("перестань" in message_lower and "следов" in message_lower) \
+                or message_lower.strip() in ("стоп", "stop", "стой"):
+            action = "stop_follow"
+            response_msg = "§b🤖 AI_Игрок остановился! 🛑"
+
+        elif "собирай" in message_lower or "собери" in message_lower or "gather" in message_lower:
+            action = "gather_blocks"
+            block_type = "stone"
+            if "камень" in message_lower or "stone" in message_lower:
+                block_type = "камень"
+            elif "уголь" in message_lower or "coal" in message_lower:
+                block_type = "уголь"
+            elif "железо" in message_lower or "iron" in message_lower:
+                block_type = "железо"
+            elif "золото" in message_lower or "gold" in message_lower:
+                block_type = "золото"
+            elif "алмаз" in message_lower or "diamond" in message_lower:
+                block_type = "алмаз"
+            elif "дерево" in message_lower or "wood" in message_lower or "дуб" in message_lower:
+                block_type = "дерево"
+            elif "земля" in message_lower or "dirt" in message_lower:
+                block_type = "земля"
+            elif "песок" in message_lower or "sand" in message_lower:
+                block_type = "песок"
+            radius = 8
+            response_msg = f"§b🤖 AI_Игрок ищет и собирает {block_type}... 🔍"
+            extra = {"block_type": block_type, "radius": radius}
+
         elif "строй" in message_lower or "build" in message_lower:
             action = "build_structure"
             if "башн" in message_lower or "tower" in message_lower:
                 structure_type = "tower"
             elif "мост" in message_lower or "bridge" in message_lower:
                 structure_type = "bridge"
+            elif "особняк" in message_lower or "mansion" in message_lower or "замок" in message_lower:
+                structure_type = "mansion"
             else:
                 structure_type = "house"
             response_msg = f"§a🏗️  Начинаю строительство: {structure_type}..."
             extra = {"structure_type": structure_type}
+
         elif "призови" in message_lower or "spawn" in message_lower:
             action = "spawn_mob"
             if "скелет" in message_lower or "skeleton" in message_lower:
@@ -329,6 +429,7 @@ def handle_chat():
                     break
             response_msg = f"§a👹 Призываю {count} {mob_type}..."
             extra = {"mob_type": mob_type, "count": count}
+
         elif "генерируй" in message_lower or "generate" in message_lower:
             action = "generate_ore"
             if "алмаз" in message_lower or "diamond" in message_lower:
@@ -342,11 +443,12 @@ def handle_chat():
                 vein_size = 10
             response_msg = f"§a⛏️  Генерирую жилу {ore_type} ({vein_size} блоков)..."
             extra = {"ore_type": ore_type, "vein_size": vein_size}
+
         else:
             action = "chat"
             ai_response = conversation_ai.get_response(player_name, message)
             response_msg = f"§b🤖 AI: §f{ai_response}"
-        
+
         result = {
             "success": True,
             "message": response_msg,
@@ -358,11 +460,11 @@ def handle_chat():
             "timestamp": datetime.now().isoformat()
         }
         result.update(extra)
-        
+
         print(f"💬 {player_name}: {message} -> {action}")
-        
+
         return jsonify(result), 200
-        
+
     except Exception as e:
         print(f"❌ Ошибка в /chat: {e}")
         return jsonify({
@@ -437,6 +539,17 @@ def info():
             "/ai/status - Статус AI",
             "/info - Информация о сервере"
         ],
+        "chat_commands": [
+            "появись / join        - AI игрок заходит на сервер",
+            "уйди / leave          - AI игрок уходит",
+            "следуй / follow       - AI следует за игроком",
+            "стоп / stop           - AI останавливается",
+            "добывай [радиус]      - AI добывает блоки",
+            "собирай [тип]         - AI собирает конкретный блок",
+            "строй дом/башню/мост/особняк - AI строит",
+            "призови зомби/скелета/крипера - AI призывает мобов",
+            "генерируй алмазы/золото/железо - AI генерирует руду"
+        ],
         "model_loaded": is_model_loaded,
         "ai_enabled": ai_enabled
     }), 200
@@ -447,18 +560,25 @@ if __name__ == "__main__":
     print("🚀 Запуск Minecraft AI Chat Server...")
     print(f"📡 Адрес: http://{HOST}:{PORT}")
     print("")
-    
+
     load_model()
     print("✅ Сервер готов к работе!")
     print("📚 API документация: http://localhost:5000/info")
     print("")
-    print("💬 Примеры команд в чате:")
-    print("   - 'строй дом'")
-    print("   - 'призови зомби'")
-    print("   - 'генерируй золото'")
-    print("   - 'помощь'")
-    print("   - 'привет, как дела?' (AI разговор)")
-    print("   - 'расскажи про блоки' (AI разговор)")
+    print("💬 Примеры команд в чате (после префикса 'ai '):")
+    print("   - 'появись'               → AI игрок заходит на сервер")
+    print("   - 'следуй'                → AI следует за тобой")
+    print("   - 'добывай'               → AI добывает блоки")
+    print("   - 'добывай камень'        → AI добывает камень")
+    print("   - 'собирай алмаз'         → AI ищет и собирает алмазы")
+    print("   - 'стоп'                  → AI останавливается")
+    print("   - 'строй дом'             → AI строит дом")
+    print("   - 'строй особняк'         → AI строит большой особняк")
+    print("   - 'строй башню'           → AI строит башню")
+    print("   - 'призови зомби'         → AI призывает зомби")
+    print("   - 'генерируй золото'      → AI генерирует жилу золота")
+    print("   - 'привет, как дела?'     → AI разговор")
+    print("   - 'помощь'                → список всех команд")
     print("")
-    
+
     app.run(host=HOST, port=PORT, debug=False, threaded=True)
