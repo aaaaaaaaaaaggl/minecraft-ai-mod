@@ -39,20 +39,12 @@ public class ChatCommandListener implements Listener {
         Player player = event.getPlayer();
         String message = event.getMessage();
         
-        // Проверить, является ли это командой AI
-        if (message.startsWith("ai ") || message.startsWith("AI ") || 
-            message.startsWith("строй ") || message.startsWith("СТРОЙ ") ||
-            message.startsWith("призови ") || message.startsWith("ПРИЗОВИ ") ||
-            message.startsWith("генерируй ") || message.startsWith("ГЕНЕРИРУЙ ") ||
-            message.startsWith("помощь") || message.startsWith("ПОМОЩЬ")) {
+        // Проверить, является ли это командой AI (требуется префикс "ai ")
+        if (message.toLowerCase().startsWith("ai ")) {
             
-            // Убрать префикс если есть
+            // Убрать префикс "ai "
             final String command;
-            if (message.toLowerCase().startsWith("ai ")) {
-                command = message.substring(3);
-            } else {
-                command = message;
-            }
+            command = message.substring(3);
             
             // Отправить на обработку асинхронно
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
