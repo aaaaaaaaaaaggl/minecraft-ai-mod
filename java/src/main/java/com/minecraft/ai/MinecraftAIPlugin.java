@@ -11,6 +11,7 @@ public class MinecraftAIPlugin extends JavaPlugin {
     private static final Logger LOGGER = Logger.getLogger("MinecraftAI");
     private AIApiClient apiClient;
     private ActionExecutor actionExecutor;
+    private AIPlayerManager aiPlayerManager;
     private ChatCommandListener chatListener;
     
     @Override
@@ -27,9 +28,10 @@ public class MinecraftAIPlugin extends JavaPlugin {
         LOGGER.info("🔗 AI сервер URL: " + apiUrl);
         LOGGER.info("⏱️  Timeout: " + timeout + " сек");
         
-        // Создать API клиент и исполнитель действий
+        // Создать API клиент, исполнитель действий и менеджер AI-игрока
         apiClient = new AIApiClient(apiUrl, this);
         actionExecutor = new ActionExecutor(this);
+        aiPlayerManager = AIPlayerManager.getInstance(this);
         
         // Проверить подключение к серверу
         if (apiClient.checkHealth()) {
@@ -40,7 +42,7 @@ public class MinecraftAIPlugin extends JavaPlugin {
         }
         
         // Зарегистрировать слушателя событий
-        chatListener = new ChatCommandListener(this, apiClient, actionExecutor);
+        chatListener = new ChatCommandListener(this, apiClient, actionExecutor, aiPlayerManager);
         getServer().getPluginManager().registerEvents(chatListener, this);
         
         // Зарегистрировать команды
@@ -52,6 +54,9 @@ public class MinecraftAIPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         LOGGER.info("❌ Minecraft AI плагин отключается...");
+        if (aiPlayerManager != null) {
+            aiPlayerManager.shutdown();
+        }
         LOGGER.info("❌ Minecraft AI плагин выгружен");
     }
     
@@ -106,5 +111,12 @@ public class MinecraftAIPlugin extends JavaPlugin {
      */
     public ActionExecutor getActionExecutor() {
         return actionExecutor;
+    }
+
+    /**
+     * Получить менеджер AI-игрока
+     */
+    public AIPlayerManager getAIPlayerManager() {
+        return aiPlayerManager;
     }
 }
