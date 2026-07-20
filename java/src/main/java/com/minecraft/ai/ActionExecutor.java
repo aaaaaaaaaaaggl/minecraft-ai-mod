@@ -38,7 +38,7 @@ public class ActionExecutor {
      * Build a structure at the player's current location.
      *
      * @param player        the requesting player
-     * @param structureType "house", "tower", or "bridge" (case-insensitive)
+     * @param structureType "house", "tower", "bridge", or "mansion" (case-insensitive)
      */
     public void buildStructure(Player player, String structureType) {
         Location origin = player.getLocation().clone();
@@ -54,6 +54,11 @@ public class ActionExecutor {
                 buildBridge(origin);
                 player.sendMessage("§a🏗️  Мост построен!");
                 LOGGER.info(player.getName() + " построил мост");
+                break;
+            case "mansion":
+                buildMansion(origin);
+                player.sendMessage("§a🏰  Особняк построен!");
+                LOGGER.info(player.getName() + " построил особняк");
                 break;
             default:
                 buildHouse(origin);
@@ -215,6 +220,190 @@ public class ActionExecutor {
         // Entrance gates at both ends of the bridge
         placeGate(world, px - halfLength, py + 1, pz, BlockFace.SOUTH);
         placeGate(world, px + halfLength, py + 1, pz, BlockFace.SOUTH);
+    }
+
+    /**
+     * Build a large 2-story mansion (12×15 base) with a pitched roof, double door
+     * entrance, multi-story windows, interior room divider, corner pillars, and a
+     * decorative front porch.
+     *
+     * Layout (relative to origin):
+     *   X: -5 .. +6 (12 wide)   Z: -7 .. +7 (15 deep)
+     *   Story 1: y 0–4 (stone brick)
+     *   Story 2: y 5–8 (spruce plank)
+     *   Roof:    y 9–12 (dark oak plank, stepped pitch)
+     */
+    private void buildMansion(Location origin) {
+        World world = origin.getWorld();
+        int px = origin.getBlockX();
+        int py = origin.getBlockY();
+        int pz = origin.getBlockZ();
+
+        // ── Floor ────────────────────────────────────────────────────────────
+        for (int x = -5; x <= 6; x++) {
+            for (int z = -7; z <= 7; z++) {
+                world.getBlockAt(px + x, py, pz + z).setType(Material.STONE_BRICKS);
+            }
+        }
+
+        // ── Story 1 walls (y 1–4): stone bricks ──────────────────────────────
+        for (int y = 1; y <= 4; y++) {
+            for (int x = -5; x <= 6; x++) {
+                world.getBlockAt(px + x, py + y, pz - 7).setType(Material.STONE_BRICKS);
+                world.getBlockAt(px + x, py + y, pz + 7).setType(Material.STONE_BRICKS);
+            }
+            for (int z = -6; z <= 6; z++) {
+                world.getBlockAt(px - 5, py + y, pz + z).setType(Material.STONE_BRICKS);
+                world.getBlockAt(px + 6, py + y, pz + z).setType(Material.STONE_BRICKS);
+            }
+        }
+
+        // Corner pillars – dark oak log (story 1)
+        for (int y = 1; y <= 4; y++) {
+            world.getBlockAt(px - 5, py + y, pz - 7).setType(Material.DARK_OAK_LOG);
+            world.getBlockAt(px + 6, py + y, pz - 7).setType(Material.DARK_OAK_LOG);
+            world.getBlockAt(px - 5, py + y, pz + 7).setType(Material.DARK_OAK_LOG);
+            world.getBlockAt(px + 6, py + y, pz + 7).setType(Material.DARK_OAK_LOG);
+        }
+
+        // ── Main entrance: double oak door + decorative arch ──────────────────
+        // placeDoor replaces the wall blocks at y+1 and y+2 with door halves
+        placeDoor(world, Material.OAK_DOOR, px,     py + 1, pz - 7, BlockFace.SOUTH);
+        placeDoor(world, Material.OAK_DOOR, px + 1, py + 1, pz - 7, BlockFace.SOUTH);
+        // Dark oak arch spanning the double door (replaces wall at y+3)
+        world.getBlockAt(px - 1, py + 3, pz - 7).setType(Material.DARK_OAK_PLANKS);
+        world.getBlockAt(px,     py + 3, pz - 7).setType(Material.DARK_OAK_PLANKS);
+        world.getBlockAt(px + 1, py + 3, pz - 7).setType(Material.DARK_OAK_PLANKS);
+        world.getBlockAt(px + 2, py + 3, pz - 7).setType(Material.DARK_OAK_PLANKS);
+
+        // ── Story 1 windows (glass pane, 2 per wall) ─────────────────────────
+        // Front (flanking entrance)
+        world.getBlockAt(px - 3, py + 2, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 3, py + 3, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 4, py + 2, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 4, py + 3, pz - 7).setType(Material.GLASS_PANE);
+        // Back
+        world.getBlockAt(px - 2, py + 2, pz + 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 2, py + 3, pz + 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 3, py + 2, pz + 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 3, py + 3, pz + 7).setType(Material.GLASS_PANE);
+        // Left side
+        world.getBlockAt(px - 5, py + 2, pz - 3).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 5, py + 3, pz - 3).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 5, py + 2, pz + 3).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 5, py + 3, pz + 3).setType(Material.GLASS_PANE);
+        // Right side
+        world.getBlockAt(px + 6, py + 2, pz - 3).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 6, py + 3, pz - 3).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 6, py + 2, pz + 3).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 6, py + 3, pz + 3).setType(Material.GLASS_PANE);
+
+        // ── Interior ground-floor room divider (entrance hall vs. rear rooms) ─
+        for (int x = -4; x <= 5; x++) {
+            for (int y = 1; y <= 3; y++) {
+                world.getBlockAt(px + x, py + y, pz - 2).setType(Material.OAK_PLANKS);
+            }
+        }
+        // Door in the divider wall (replaces plank blocks at the chosen opening)
+        placeDoor(world, Material.OAK_DOOR, px + 1, py + 1, pz - 2, BlockFace.SOUTH);
+
+        // ── Inter-floor platform at y=5 (oak planks ceiling/upper floor) ──────
+        for (int x = -4; x <= 5; x++) {
+            for (int z = -6; z <= 6; z++) {
+                world.getBlockAt(px + x, py + 5, pz + z).setType(Material.OAK_PLANKS);
+            }
+        }
+
+        // ── Story 2 walls (y 6–8): spruce planks ─────────────────────────────
+        for (int y = 6; y <= 8; y++) {
+            for (int x = -5; x <= 6; x++) {
+                world.getBlockAt(px + x, py + y, pz - 7).setType(Material.SPRUCE_PLANKS);
+                world.getBlockAt(px + x, py + y, pz + 7).setType(Material.SPRUCE_PLANKS);
+            }
+            for (int z = -6; z <= 6; z++) {
+                world.getBlockAt(px - 5, py + y, pz + z).setType(Material.SPRUCE_PLANKS);
+                world.getBlockAt(px + 6, py + y, pz + z).setType(Material.SPRUCE_PLANKS);
+            }
+        }
+
+        // Corner pillars – dark oak log (story 2)
+        for (int y = 6; y <= 8; y++) {
+            world.getBlockAt(px - 5, py + y, pz - 7).setType(Material.DARK_OAK_LOG);
+            world.getBlockAt(px + 6, py + y, pz - 7).setType(Material.DARK_OAK_LOG);
+            world.getBlockAt(px - 5, py + y, pz + 7).setType(Material.DARK_OAK_LOG);
+            world.getBlockAt(px + 6, py + y, pz + 7).setType(Material.DARK_OAK_LOG);
+        }
+
+        // ── Story 2 windows ───────────────────────────────────────────────────
+        // Front (4 windows – flanking and centre)
+        world.getBlockAt(px - 3, py + 7, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 3, py + 8, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 4, py + 7, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 4, py + 8, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px,     py + 7, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px,     py + 8, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 1, py + 7, pz - 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 1, py + 8, pz - 7).setType(Material.GLASS_PANE);
+        // Back
+        world.getBlockAt(px - 2, py + 7, pz + 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 2, py + 8, pz + 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 3, py + 7, pz + 7).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 3, py + 8, pz + 7).setType(Material.GLASS_PANE);
+        // Left side
+        world.getBlockAt(px - 5, py + 7, pz - 2).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 5, py + 8, pz - 2).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 5, py + 7, pz + 2).setType(Material.GLASS_PANE);
+        world.getBlockAt(px - 5, py + 8, pz + 2).setType(Material.GLASS_PANE);
+        // Right side
+        world.getBlockAt(px + 6, py + 7, pz - 2).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 6, py + 8, pz - 2).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 6, py + 7, pz + 2).setType(Material.GLASS_PANE);
+        world.getBlockAt(px + 6, py + 8, pz + 2).setType(Material.GLASS_PANE);
+
+        // ── Pitched roof: 4 stepped layers of dark oak planks ────────────────
+        // y=9: full footprint (12×15)
+        for (int x = -5; x <= 6; x++) {
+            for (int z = -7; z <= 7; z++) {
+                world.getBlockAt(px + x, py + 9, pz + z).setType(Material.DARK_OAK_PLANKS);
+            }
+        }
+        // y=10: inset 1 block on each X side
+        for (int x = -4; x <= 5; x++) {
+            for (int z = -7; z <= 7; z++) {
+                world.getBlockAt(px + x, py + 10, pz + z).setType(Material.DARK_OAK_PLANKS);
+            }
+        }
+        // y=11: inset 2 blocks on each X side
+        for (int x = -3; x <= 4; x++) {
+            for (int z = -7; z <= 7; z++) {
+                world.getBlockAt(px + x, py + 11, pz + z).setType(Material.DARK_OAK_PLANKS);
+            }
+        }
+        // y=12: ridge (4 blocks wide)
+        for (int x = -2; x <= 3; x++) {
+            for (int z = -7; z <= 7; z++) {
+                world.getBlockAt(px + x, py + 12, pz + z).setType(Material.DARK_OAK_PLANKS);
+            }
+        }
+
+        // ── Front porch ───────────────────────────────────────────────────────
+        // Porch platform (stone bricks, one block in front of the building)
+        for (int x = -1; x <= 2; x++) {
+            world.getBlockAt(px + x, py, pz - 8).setType(Material.STONE_BRICKS);
+        }
+        // Porch pillars – dark oak log (flanking the entrance)
+        for (int y = 1; y <= 4; y++) {
+            world.getBlockAt(px - 2, py + y, pz - 8).setType(Material.DARK_OAK_LOG);
+            world.getBlockAt(px + 3, py + y, pz - 8).setType(Material.DARK_OAK_LOG);
+        }
+        // Porch canopy connecting pillars to the building wall
+        for (int x = -2; x <= 3; x++) {
+            world.getBlockAt(px + x, py + 5, pz - 8).setType(Material.DARK_OAK_PLANKS);
+            world.getBlockAt(px + x, py + 5, pz - 7).setType(Material.DARK_OAK_PLANKS);
+        }
+        // Decorative fence railings on porch sides
+        world.getBlockAt(px - 1, py + 1, pz - 8).setType(Material.OAK_FENCE);
+        world.getBlockAt(px + 2, py + 1, pz - 8).setType(Material.OAK_FENCE);
     }
 
     // ── Resolvers ────────────────────────────────────────────────────────────
