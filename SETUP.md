@@ -29,7 +29,7 @@ python model_trainer.py
 ### Шаг 3: Запуск AI сервера
 
 ```bash
-python ai_server.py
+python ai_server_updated2.0.py
 ```
 
 Вы должны увидеть:
