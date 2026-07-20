@@ -34,7 +34,7 @@ class ConversationAI:
 
     def __init__(self):
         self.conversation_history = {}  # player_name -> list of messages
-        self.max_history = 10  # максимальное количество пар сообщений в истории
+        self.max_history = 10  # максимальное количество пар (игрок + AI = 20 сообщений)
 
         # Паттерны для распознавания тематики
         self.patterns = [
@@ -381,7 +381,7 @@ def chat_history():
     """
     player_name = request.args.get("player_name", "")
     if not player_name:
-        return jsonify({"error": "Missing player_name parameter"}), 400
+        return jsonify({"success": False, "error": "Missing player_name parameter"}), 400
     history = conversation_ai.get_history(player_name)
     return jsonify({
         "success": True,
