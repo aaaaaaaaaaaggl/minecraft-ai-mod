@@ -87,21 +87,52 @@ def handle_chat():
         y = data.get("y", 64)
         z = data.get("z", 0)
         
-        # Простая обработка команд
+        # Simple command dispatch with action-specific parameters
         message_lower = message.lower()
-        
+        extra = {}
+
         if "помощь" in message_lower or "help" in message_lower:
             action = "help"
-            response_msg = "§6=== AI Помощь ===\n§aДоступные команды:\n§e- строй дом\n§e- призови зомби\n§e- генерируй золото"
+            response_msg = "§6=== AI Помощь ===\n§aДоступные команды:\n§e- строй дом\n§e- строй башню\n§e- строй мост\n§e- призови зомби\n§e- призови скелета\n§e- призови крипера\n§e- генерируй алмазы\n§e- генерируй золото\n§e- генерируй железо"
         elif "строй" in message_lower or "build" in message_lower:
             action = "build_structure"
-            response_msg = "§a🏗️  Начинаю строительство дома..."
+            if "башн" in message_lower or "tower" in message_lower:
+                structure_type = "tower"
+            elif "мост" in message_lower or "bridge" in message_lower:
+                structure_type = "bridge"
+            else:
+                structure_type = "house"
+            response_msg = f"§a🏗️  Начинаю строительство: {structure_type}..."
+            extra = {"structure_type": structure_type}
         elif "призови" in message_lower or "spawn" in message_lower:
             action = "spawn_mob"
-            response_msg = "§a👹 Призываю мобов..."
+            if "скелет" in message_lower or "skeleton" in message_lower:
+                mob_type = "skeleton"
+            elif "крипер" in message_lower or "creeper" in message_lower:
+                mob_type = "creeper"
+            else:
+                mob_type = "zombie"
+            # Parse count if given (e.g. "призови 5 зомби")
+            count = 3
+            for word in message_lower.split():
+                if word.isdigit():
+                    count = max(1, min(int(word), 10))
+                    break
+            response_msg = f"§a👹 Призываю {count} {mob_type}..."
+            extra = {"mob_type": mob_type, "count": count}
         elif "генерируй" in message_lower or "generate" in message_lower:
             action = "generate_ore"
-            response_msg = "§a⛏️  Генерирую руду..."
+            if "алмаз" in message_lower or "diamond" in message_lower:
+                ore_type = "diamond"
+                vein_size = 6
+            elif "золот" in message_lower or "gold" in message_lower:
+                ore_type = "gold"
+                vein_size = 8
+            else:
+                ore_type = "iron"
+                vein_size = 10
+            response_msg = f"§a⛏️  Генерирую жилу {ore_type} ({vein_size} блоков)..."
+            extra = {"ore_type": ore_type, "vein_size": vein_size}
         else:
             action = "unknown"
             response_msg = "§c❌ Команда не распознана. Напиши 'помощь'"
@@ -116,6 +147,7 @@ def handle_chat():
             "z": z,
             "timestamp": datetime.now().isoformat()
         }
+        result.update(extra)
         
         print(f"💬 {player_name}: {message} -> {action}")
         

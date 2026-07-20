@@ -20,11 +20,14 @@ public class ChatCommandListener implements Listener {
     private static final Logger LOGGER = Logger.getLogger("ChatCommandListener");
     private final JavaPlugin plugin;
     private final AIApiClient apiClient;
+    private final ActionExecutor actionExecutor;
     private final Gson gson;
     
-    public ChatCommandListener(JavaPlugin plugin, AIApiClient apiClient) {
+    public ChatCommandListener(JavaPlugin plugin, AIApiClient apiClient,
+                               ActionExecutor actionExecutor) {
         this.plugin = plugin;
         this.apiClient = apiClient;
+        this.actionExecutor = actionExecutor;
         this.gson = new Gson();
     }
     
@@ -59,7 +62,7 @@ public class ChatCommandListener implements Listener {
     }
     
     /**
-     * Обработать команду AI
+     * Обработать команду AI (выполняется в async thread)
      */
     private void processAIChatCommand(Player player, String command) {
         try {
@@ -76,20 +79,21 @@ public class ChatCommandListener implements Listener {
             
             if (response != null) {
                 if (response.success) {
-                    // Отправить ответ игроку
-                    String responseMessage = response.message;
-                    if (responseMessage != null && !responseMessage.isEmpty()) {
-                        player.sendMessage(responseMessage);
+                    // Показать ответное сообщение игроку
+                    if (response.message != null && !response.message.isEmpty()) {
+                        player.sendMessage(response.message);
                     }
                     
-                    // Выполнить действие если нужно
+                    // Выполнить действие на главном потоке сервера
                     executeAction(player, response);
                     
-                    LOGGER.info("✅ Команда выполнена для " + player.getName() + ": " + response.action);
+                    LOGGER.info("✅ Команда выполнена для " + player.getName()
+                            + ": " + response.action);
                 } else {
-                    player.sendMessage(response.message != null ? response.message : 
-                                     "§c❌ Ошибка обработки команды");
-                    LOGGER.warning("⚠️  Ошибка для " + player.getName() + ": " + response.message);
+                    player.sendMessage(response.message != null ? response.message
+                            : "§c❌ Ошибка обработки команды");
+                    LOGGER.warning("⚠️  Ошибка для " + player.getName()
+                            + ": " + response.message);
                 }
             } else {
                 player.sendMessage("§cОшибка подключения к AI серверу");
@@ -103,20 +107,23 @@ public class ChatCommandListener implements Listener {
     }
     
     /**
-     * Выполнить действие на основе ответа AI
+     * Диспетчер действий — перенаправляет на главный поток для Bukkit-операций
      */
     private void executeAction(Player player, AIApiClient.ChatCommandResponse response) {
         if (response.action == null) return;
         
         switch (response.action) {
             case "build_structure":
-                executeBuild(player, response);
+                Bukkit.getScheduler().runTask(plugin,
+                        () -> executeBuild(player, response));
                 break;
             case "spawn_mob":
-                executeSpawn(player, response);
+                Bukkit.getScheduler().runTask(plugin,
+                        () -> executeSpawn(player, response));
                 break;
             case "generate_ore":
-                executeGenerate(player, response);
+                Bukkit.getScheduler().runTask(plugin,
+                        () -> executeGenerate(player, response));
                 break;
             case "help":
                 executeHelp(player, response);
@@ -130,71 +137,53 @@ public class ChatCommandListener implements Listener {
     }
     
     /**
-     * Выполнить построение
+     * Выполнить построение (главный поток)
      */
     private void executeBuild(Player player, AIApiClient.ChatCommandResponse response) {
         try {
-            String structureType = (String) response.getProperty("structure_type");
-            Integer height = ((Number) response.getProperty("height")).intValue();
-            
-            player.sendMessage("§a🏗️  Начинаю строительство структуры: " + structureType);
-            
-            // Здесь можно добавить логику построения
-            // Например, использовать WorldEdit или собственную логику
-            
-            LOGGER.info(player.getName() + " заказал построение: " + structureType + " высотой " + height);
-            
+            String structureType = getStringProperty(response, "structure_type", "house");
+            actionExecutor.buildStructure(player, structureType);
         } catch (Exception e) {
+            player.sendMessage("§c❌ Ошибка при построении: " + e.getMessage());
             LOGGER.warning("Ошибка при построении: " + e.getMessage());
         }
     }
     
     /**
-     * Выполнить призыв моба
+     * Выполнить призыв моба (главный поток)
      */
     private void executeSpawn(Player player, AIApiClient.ChatCommandResponse response) {
         try {
-            String mobType = (String) response.getProperty("mob_type");
-            Integer count = ((Number) response.getProperty("count")).intValue();
-            
-            player.sendMessage("§a👹 Призываю " + count + " " + mobType + "...");
-            
-            // Здесь можно добавить логику призыва мобов
-            
-            LOGGER.info(player.getName() + " заказал призыв: " + count + "x " + mobType);
-            
+            String mobType = getStringProperty(response, "mob_type", "zombie");
+            int count = getIntProperty(response, "count", 3);
+            actionExecutor.spawnMob(player, mobType, count);
         } catch (Exception e) {
+            player.sendMessage("§c❌ Ошибка при призыве моба: " + e.getMessage());
             LOGGER.warning("Ошибка при призыве моба: " + e.getMessage());
         }
     }
     
     /**
-     * Выполнить генерацию руды
+     * Выполнить генерацию руды (главный поток)
      */
     private void executeGenerate(Player player, AIApiClient.ChatCommandResponse response) {
         try {
-            String oreType = (String) response.getProperty("ore_type");
-            Integer veinSize = ((Number) response.getProperty("vein_size")).intValue();
-            
-            player.sendMessage("§a⛏️  Генерирую жилу " + oreType + " размером " + veinSize + "...");
-            
-            // Здесь можно добавить логику генерации руды
-            
-            LOGGER.info(player.getName() + " заказал генерацию: " + oreType + " (" + veinSize + " блоков)");
-            
+            String oreType = getStringProperty(response, "ore_type", "iron");
+            int veinSize = getIntProperty(response, "vein_size", 8);
+            actionExecutor.generateOre(player, oreType, veinSize);
         } catch (Exception e) {
+            player.sendMessage("§c❌ Ошибка при генерации руды: " + e.getMessage());
             LOGGER.warning("Ошибка при генерации руды: " + e.getMessage());
         }
     }
     
     /**
-     * Выполнить команду помощи
+     * Вывести подсказку
      */
     private void executeHelp(Player player, AIApiClient.ChatCommandResponse response) {
         String message = response.message;
         if (message != null) {
-            String[] lines = message.split("\\n");
-            for (String line : lines) {
+            for (String line : message.split("\\n")) {
                 if (!line.trim().isEmpty()) {
                     player.sendMessage(line);
                 }
@@ -203,12 +192,30 @@ public class ChatCommandListener implements Listener {
     }
     
     /**
-     * Выполнить команду статуса
+     * Вывести статус
      */
     private void executeStatus(Player player, AIApiClient.ChatCommandResponse response) {
         String message = response.message;
         if (message != null) {
             player.sendMessage("§b" + message);
         }
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private String getStringProperty(AIApiClient.ChatCommandResponse response,
+                                     String key, String defaultValue) {
+        Object value = response.getProperty(key);
+        return (value != null) ? value.toString() : defaultValue;
+    }
+
+    private int getIntProperty(AIApiClient.ChatCommandResponse response,
+                               String key, int defaultValue) {
+        Object value = response.getProperty(key);
+        if (value instanceof Number) return ((Number) value).intValue();
+        if (value != null) {
+            try { return Integer.parseInt(value.toString()); } catch (NumberFormatException ignored) {}
+        }
+        return defaultValue;
     }
 }
