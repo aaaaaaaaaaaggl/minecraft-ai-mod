@@ -413,14 +413,14 @@ public class ActionExecutor {
         lower.setType(doorType, false);
         Door lowerData = (Door) lower.getBlockData();
         lowerData.setFacing(facing);
-        lowerData.setHalf(Bisected.Half.LOWER);
+        lowerData.setHalf(Bisected.Half.valueOf("LOWER"));
         lower.setBlockData(lowerData);
 
         Block upper = world.getBlockAt(x, y + 1, z);
         upper.setType(doorType, false);
         Door upperData = (Door) upper.getBlockData();
         upperData.setFacing(facing);
-        upperData.setHalf(Bisected.Half.UPPER);
+        upperData.setHalf(Bisected.Half.valueOf("UPPER"));
         upper.setBlockData(upperData);
     }
 
