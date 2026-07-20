@@ -335,7 +335,7 @@ public class ActionExecutor {
         }
 
         // ── Story 2 windows ───────────────────────────────────────────────────
-        // Front (4 windows – flanking and centre)
+        // Front (8 window blocks in 4 double-height pairs: 2 flanking + 2 centre)
         world.getBlockAt(px - 3, py + 7, pz - 7).setType(Material.GLASS_PANE);
         world.getBlockAt(px - 3, py + 8, pz - 7).setType(Material.GLASS_PANE);
         world.getBlockAt(px + 4, py + 7, pz - 7).setType(Material.GLASS_PANE);
@@ -379,7 +379,7 @@ public class ActionExecutor {
                 world.getBlockAt(px + x, py + 11, pz + z).setType(Material.DARK_OAK_PLANKS);
             }
         }
-        // y=12: ridge (4 blocks wide)
+        // y=12: ridge (6 blocks wide)
         for (int x = -2; x <= 3; x++) {
             for (int z = -7; z <= 7; z++) {
                 world.getBlockAt(px + x, py + 12, pz + z).setType(Material.DARK_OAK_PLANKS);
