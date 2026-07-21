@@ -97,6 +97,33 @@ public class MinecraftAIPlugin extends JavaPlugin {
                 return false;
             });
         }
+
+        if (getCommand("ai_bot") != null) {
+            getCommand("ai_bot").setExecutor((sender, cmd, label, args) -> {
+                if (args.length == 0) {
+                    sender.sendMessage("§b🤖 AI Bot команды§r");
+                    sender.sendMessage("§eИспользование: /ai_bot <combat|fight>");
+                    return true;
+                }
+
+                if (!(sender instanceof org.bukkit.entity.Player)) {
+                    sender.sendMessage("§cЭта команда доступна только игрокам.");
+                    return true;
+                }
+
+                org.bukkit.entity.Player player = (org.bukkit.entity.Player) sender;
+                String sub = args[0].toLowerCase();
+
+                if (sub.equals("combat") || sub.equals("fight")) {
+                    actionExecutor.startCombat(player);
+                    return true;
+                }
+
+                sender.sendMessage("§cНеизвестная команда: " + args[0]);
+                sender.sendMessage("§eИспользование: /ai_bot <combat|fight>");
+                return false;
+            });
+        }
     }
     
     /**

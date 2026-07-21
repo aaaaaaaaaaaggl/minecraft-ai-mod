@@ -27,9 +27,11 @@ public class ActionExecutor {
 
     private final JavaPlugin plugin;
     private final Random random = new Random();
+    private final CombatSystem combatSystem;
 
     public ActionExecutor(JavaPlugin plugin) {
         this.plugin = plugin;
+        this.combatSystem = new CombatSystem(plugin);
     }
 
     // ── Public API ───────────────────────────────────────────────────────────
@@ -123,6 +125,20 @@ public class ActionExecutor {
     }
 
     // ── Structure builders ───────────────────────────────────────────────────
+
+    /**
+     * Toggle combat mode for the player.
+     * Starts combat if not active; stops it if already active.
+     *
+     * @param player the requesting player
+     */
+    public void startCombat(Player player) {
+        if (combatSystem.isInCombat(player)) {
+            combatSystem.stopCombat(player);
+        } else {
+            combatSystem.startCombat(player);
+        }
+    }
 
     private void buildHouse(Location origin) {
         World world = origin.getWorld();
