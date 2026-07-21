@@ -13,6 +13,8 @@ public class MinecraftAIPlugin extends JavaPlugin {
     private ActionExecutor actionExecutor;
     private AIPlayerManager aiPlayerManager;
     private ChatCommandListener chatListener;
+    private MenuListener menuListener;
+    private CompassListener compassListener;
     
     @Override
     public void onEnable() {
@@ -20,6 +22,9 @@ public class MinecraftAIPlugin extends JavaPlugin {
         
         // Сохранить конфиг по умолчанию
         saveDefaultConfig();
+        
+        // Инициализировать хранилище настроек AI Bot
+        AIBotSettings.init(this);
         
         // Получить URL AI сервера из конфига
         String apiUrl = getConfig().getString("ai-server.url", "http://localhost:5000");
@@ -41,9 +46,15 @@ public class MinecraftAIPlugin extends JavaPlugin {
             LOGGER.warning("   Убедись, что Python AI сервер запущен на " + apiUrl);
         }
         
-        // Зарегистрировать слушателя событий
+        // Зарегистрировать слушателей событий
         chatListener = new ChatCommandListener(this, apiClient, actionExecutor, aiPlayerManager);
         getServer().getPluginManager().registerEvents(chatListener, this);
+
+        menuListener = new MenuListener(this, aiPlayerManager);
+        getServer().getPluginManager().registerEvents(menuListener, this);
+
+        compassListener = new CompassListener(this, menuListener);
+        getServer().getPluginManager().registerEvents(compassListener, this);
         
         // Зарегистрировать команды
         registerCommands();
@@ -100,27 +111,60 @@ public class MinecraftAIPlugin extends JavaPlugin {
 
         if (getCommand("ai_bot") != null) {
             getCommand("ai_bot").setExecutor((sender, cmd, label, args) -> {
-                if (args.length == 0) {
-                    sender.sendMessage("§b🤖 AI Bot команды§r");
-                    sender.sendMessage("§eИспользование: /ai_bot <combat|fight>");
-                    return true;
-                }
-
                 if (!(sender instanceof org.bukkit.entity.Player)) {
                     sender.sendMessage("§cЭта команда доступна только игрокам.");
                     return true;
                 }
 
                 org.bukkit.entity.Player player = (org.bukkit.entity.Player) sender;
+
+                if (args.length == 0) {
+                    // Default: open the menu
+                    menuListener.openMenu(player);
+                    return true;
+                }
+
                 String sub = args[0].toLowerCase();
+
+                if (sub.equals("menu")) {
+                    menuListener.openMenu(player);
+                    return true;
+                }
 
                 if (sub.equals("combat") || sub.equals("fight")) {
                     actionExecutor.startCombat(player);
                     return true;
                 }
 
-                sender.sendMessage("§cНеизвестная команда: " + args[0]);
-                sender.sendMessage("§eИспользование: /ai_bot <combat|fight>");
+                if (sub.equals("spawn")) {
+                    aiPlayerManager.spawnAI(player);
+                    return true;
+                }
+
+                if (sub.equals("despawn")) {
+                    aiPlayerManager.despawnAI(player);
+                    return true;
+                }
+
+                if (sub.equals("compass")) {
+                    CompassListener.giveCompass(player);
+                    player.sendMessage("§a🧭 Компас AI выдан!");
+                    return true;
+                }
+
+                sender.sendMessage("§cНеизвестная подкоманда: §e" + args[0]);
+                sender.sendMessage("§7Использование: §e/ai_bot [menu|combat|spawn|despawn|compass]");
+                return true;
+            });
+        }
+
+        if (getCommand("ai_menu") != null) {
+            getCommand("ai_menu").setExecutor((sender, cmd, label, args) -> {
+                if (!(sender instanceof org.bukkit.entity.Player)) {
+                    sender.sendMessage("§cЭта команда доступна только игрокам.");
+                    return true;
+                }
+                menuListener.openMenu((org.bukkit.entity.Player) sender);
                 return true;
             });
         }

@@ -13,6 +13,15 @@ plugin:
   # Отправлять логи в консоль
   debug: true
 
+# Настройки AI Bot
+ai-bot:
+  # Ник NPC (FakePlayerNPC через ProtocolLib)
+  npc-name: "AI_bot"
+  # Компас выдаётся при первом входе каждому игроку
+  give-compass-on-first-join: true
+  # Компас выдаётся повторно при возрождении после смерти
+  give-compass-on-respawn: true
+
 # Команды в чате, которые понимает AI
 chat-commands:
   build:

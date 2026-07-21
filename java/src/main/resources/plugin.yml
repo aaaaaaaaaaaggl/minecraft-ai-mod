@@ -4,14 +4,21 @@ description: AI Chat Server для Minecraft
 author: aaaaaaaaaaaggl
 main: com.minecraft.ai.MinecraftAIPlugin
 
+softdepend:
+  - ProtocolLib
+
 commands:
   ai:
     description: AI команды
     usage: /ai <enable|disable|status|help>
     aliases: [ai-cmd]
   ai_bot:
-    description: AI Bot команды
-    usage: /ai_bot <combat|fight>
+    description: AI Bot команды и меню управления
+    usage: /ai_bot [menu|combat|spawn|despawn|compass]
+  ai_menu:
+    description: Открыть меню управления AI Bot
+    usage: /ai_menu
+    aliases: [aimenu]
 
 permissions:
   minecraft.ai.use:

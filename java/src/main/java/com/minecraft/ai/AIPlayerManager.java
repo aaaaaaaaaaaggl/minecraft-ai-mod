@@ -24,6 +24,7 @@ public class AIPlayerManager {
 
     private final JavaPlugin plugin;
     private VirtualPlayer virtualPlayer;
+    private FakePlayerNPC fakePlayerNPC;
 
     private AIPlayerManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -45,9 +46,19 @@ public class AIPlayerManager {
     // ── Public API ──────────────────────────────────────────────────────────
 
     /**
-     * Spawns the AI near {@code player}, creating the VirtualPlayer if needed.
+     * Spawns the AI near {@code player}, creating the VirtualPlayer and
+     * FakePlayerNPC (via ProtocolLib) if needed.
      */
     public void spawnAI(Player player) {
+        // Visual NPC via ProtocolLib (Steve skin)
+        if (fakePlayerNPC == null) {
+            fakePlayerNPC = new FakePlayerNPC(plugin, "AI_bot");
+        }
+        if (!fakePlayerNPC.isSpawned()) {
+            fakePlayerNPC.spawn(player);
+        }
+
+        // Gameplay entity (zombie-based, handles movement/combat/building)
         if (virtualPlayer == null) {
             virtualPlayer = new VirtualPlayer(plugin, "AI_Bot");
         }
@@ -67,11 +78,22 @@ public class AIPlayerManager {
      * @param reporter player to notify (may be null)
      */
     public void despawnAI(Player reporter) {
-        if (virtualPlayer == null || !virtualPlayer.isSpawned()) {
+        boolean wasActive = false;
+
+        if (fakePlayerNPC != null && fakePlayerNPC.isSpawned()) {
+            fakePlayerNPC.despawn();
+            wasActive = true;
+        }
+
+        if (virtualPlayer != null && virtualPlayer.isSpawned()) {
+            virtualPlayer.despawn();
+            wasActive = true;
+        }
+
+        if (!wasActive) {
             if (reporter != null) reporter.sendMessage("§c🤖 AI не активен");
             return;
         }
-        virtualPlayer.despawn();
         if (reporter != null) reporter.sendMessage("§c🤖 Виртуальный игрок ушёл");
         LOGGER.info("AI despawned");
     }
@@ -136,6 +158,10 @@ public class AIPlayerManager {
 
     /** Cleans up on plugin disable: despawns NPC and resets the singleton. */
     public void shutdown() {
+        if (fakePlayerNPC != null && fakePlayerNPC.isSpawned()) {
+            fakePlayerNPC.despawn();
+        }
+        fakePlayerNPC = null;
         if (virtualPlayer != null && virtualPlayer.isSpawned()) {
             virtualPlayer.despawn();
         }
