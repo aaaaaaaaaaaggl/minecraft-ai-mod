@@ -112,11 +112,17 @@ python ai_server_updated2.0.py
 
 Maven автоматически скачает все Java зависимости при первой сборке. Зависимости проекта:
 
-| Артефакт | Версия | Откуда скачивается |
-|---|---|---|
-| `spigot-api` | `1.20.1-R0.1-SNAPSHOT` | https://hub.spigotmc.org/nexus/ |
-| `okhttp` | `4.11.0` | Maven Central |
-| `gson` | `2.10.1` | Maven Central |
+| Артефакт | Версия | Репозиторий | Откуда скачивается |
+|---|---|---|---|
+| `spigot-api` | `1.20.1-R0.1-SNAPSHOT` | `spigot-repo` | https://hub.spigotmc.org/nexus/content/repositories/snapshots/ |
+| `ProtocolLib` | `4.8.0` | `dmulloy2-repo` | https://repo.dmulloy2.net/repository/public/ |
+| `okhttp` | `4.11.0` | Maven Central | https://repo.maven.apache.org/maven2 |
+| `gson` | `2.10.1` | Maven Central | https://repo.maven.apache.org/maven2 |
+
+> **Примечание о репозиториях:**
+> - `spigot-repo` — содержит SNAPSHOT-релизы Spigot API.
+> - `dmulloy2-repo` — официальный репозиторий ProtocolLib; версия **4.8.0** является последним стабильным релизом, гарантированно присутствующим в этом репозитории.
+> - `codemc-repo` — зеркало (https://repo.codemc.io/repository/maven-public/) для популярных Bukkit-библиотек, добавлено как запасной источник.
 
 Репозитории уже прописаны в `java/pom.xml`. Просто запустите сборку — Maven скачает всё сам:
 
@@ -269,6 +275,47 @@ ps aux | grep ai_server.py
 ```bash
 cd python
 python model_trainer.py
+```
+
+### Проблема: "Could not resolve dependencies / Could not find artifact ProtocolLib"
+
+**Причина:** Указана неверная версия ProtocolLib или не прописан репозиторий `dmulloy2-repo`.
+
+**Решение:**
+
+1. Убедитесь, что в `java/pom.xml` в секции `<repositories>` присутствуют все три репозитория:
+
+```xml
+<repository>
+    <id>spigot-repo</id>
+    <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+</repository>
+<repository>
+    <id>dmulloy2-repo</id>
+    <url>https://repo.dmulloy2.net/repository/public/</url>
+</repository>
+<repository>
+    <id>codemc-repo</id>
+    <url>https://repo.codemc.io/repository/maven-public/</url>
+</repository>
+```
+
+2. Убедитесь, что версия ProtocolLib равна `4.8.0` (версии 5.0.0 и 5.1.0 недоступны в этих репозиториях):
+
+```xml
+<dependency>
+    <groupId>com.comphenix.protocol</groupId>
+    <artifactId>ProtocolLib</artifactId>
+    <version>4.8.0</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+3. Принудительно обновите кеш зависимостей:
+
+```bash
+cd java
+mvn dependency:resolve -U
 ```
 
 ### Проблема: "Cannot compile Java" / "BUILD FAILURE"
