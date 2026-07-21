@@ -9,6 +9,9 @@ commands:
     description: AI команды
     usage: /ai <enable|disable|status|help>
     aliases: [ai-cmd]
+  ai_bot:
+    description: AI Bot команды
+    usage: /ai_bot <combat|fight>
 
 permissions:
   minecraft.ai.use:
