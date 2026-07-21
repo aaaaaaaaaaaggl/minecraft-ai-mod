@@ -146,11 +146,13 @@ curl http://localhost:5000/info
 
 ### Java (Maven)
 
-| Зависимость | Версия | Назначение |
-|---|---|---|
-| [spigot-api](https://www.spigotmc.org/wiki/buildtools/) | `1.20.1-R0.1-SNAPSHOT` | Bukkit/Spigot API — основной API для Minecraft плагинов. Предоставляет классы `Player`, `World`, `Block`, события и т.д. `scope: provided` (уже есть на сервере) |
-| [OkHttp](https://square.github.io/okhttp/) | `4.11.0` | HTTP-клиент для обращений к Python AI серверу (REST запросы) |
-| [Gson](https://github.com/google/gson) | `2.10.1` | Сериализация и десериализация JSON (ответы AI сервера) |
+| Зависимость | Версия | Назначение | Scope |
+|---|---|---|---|
+| [spigot-api](https://www.spigotmc.org/wiki/buildtools/) | `1.20.1-R0.1-SNAPSHOT` | Bukkit/Spigot API — основной API для Minecraft плагинов. Предоставляет классы `Player`, `World`, `Block`, события и т.д. | `provided` |
+| [OkHttp](https://square.github.io/okhttp/) | `4.11.0` | HTTP-клиент для обращений к Python AI серверу (REST запросы) | `compile` |
+| [Gson](https://github.com/google/gson) | `2.10.1` | Сериализация и десериализация JSON (ответы AI сервера) | `compile` |
+
+> **Примечание о scope:** Зависимости с `scope: provided` уже присутствуют на сервере и не упаковываются в JAR. Зависимости с `scope: compile` упаковываются в итоговый JAR автоматически через `maven-shade-plugin` (настроен в `java/pom.xml`).
 
 ### Python
 
@@ -182,8 +184,6 @@ curl http://localhost:5000/info
     </dependency>
 </dependencies>
 ```
-
-> **Примечание:** Зависимости с `scope: provided` уже должны быть установлены как плагины на сервере. Зависимости без `scope` (или `scope: compile`) будут упакованы в JAR плагина автоматически через maven-shade-plugin.
 
 ## 🔧 Конфигурация
 

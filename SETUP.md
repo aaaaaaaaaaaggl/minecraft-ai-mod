@@ -286,7 +286,7 @@ mvn dependency:resolve -U
 
 ### Проблема: "org.bukkit.block.UPPER / LOWER not found"
 
-**Решение:** Убедитесь что используется `Bisected.Half.valueOf("UPPER")` вместо `Bisected.Half.UPPER` в исходном коде. В данном проекте это уже исправлено в методе `placeDoor()` файла `ActionExecutor.java`.
+**Решение:** Убедитесь, что используется `Bisected.Half.valueOf("UPPER")` вместо `Bisected.Half.UPPER` в исходном коде. В данном проекте это уже исправлено в методе `placeDoor()` файла `ActionExecutor.java`.
 
 ---
 
