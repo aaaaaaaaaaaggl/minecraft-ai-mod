@@ -47,10 +47,10 @@ public class AIPlayerManager {
 
     /**
      * Spawns the AI near {@code player}, creating the VirtualPlayer and
-     * FakePlayerNPC (via ProtocolLib) if needed.
+     * FakePlayerNPC (via Citizens) if needed.
      */
     public void spawnAI(Player player) {
-        // Visual NPC via ProtocolLib (Steve skin)
+        // Visual NPC via Citizens (Steve skin)
         if (fakePlayerNPC == null) {
             fakePlayerNPC = new FakePlayerNPC(plugin, "AI_bot");
         }
