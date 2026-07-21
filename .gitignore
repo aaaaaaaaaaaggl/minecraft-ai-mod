@@ -52,3 +52,7 @@ logs/
 *.zip
 mods/
 crash-reports/
+
+# Exception: local Maven repo JARs should be committed
+!java/libs/**/*.jar
+!libs/*.jar

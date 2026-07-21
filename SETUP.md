@@ -115,7 +115,7 @@ Maven автоматически скачает все Java зависимост
 | Артефакт | Версия | Откуда скачивается |
 |---|---|---|
 | `spigot-api` | `1.20.1-R0.1-SNAPSHOT` | https://hub.spigotmc.org/nexus/ |
-| `ProtocolLib` | `4.8.0` | https://repo.dmulloy2.net/repository/public/ |
+| `ProtocolLib` | `4.8.0` | Локальный репозиторий (`java/libs/`) |
 | `okhttp` | `4.11.0` | Maven Central |
 | `gson` | `2.10.1` | Maven Central |
 
@@ -128,16 +128,39 @@ mvn dependency:resolve
 
 ### Настроенные репозитории
 
-В `java/pom.xml` прописаны три репозитория:
+В `java/pom.xml` прописаны следующие репозитории:
+
+- **local-libs** — `file://${project.basedir}/libs`  
+  Локальный файловый репозиторий проекта. Содержит `ProtocolLib 4.8.0`. Работает без интернета.
 
 - **spigot-repo** — `https://hub.spigotmc.org/nexus/content/repositories/snapshots/`  
   Используется для `spigot-api` (снапшоты Bukkit/Spigot).
 
 - **dmulloy2-repo** — `https://repo.dmulloy2.net/repository/public/`  
-  Официальный репозиторий ProtocolLib (dmulloy2). Содержит стабильные релизы, в том числе `4.8.0`.
+  Официальный репозиторий ProtocolLib (dmulloy2).
 
 - **codemc-repo** — `https://repo.codemc.io/repository/maven-public/`  
-  Зеркало CodeMC — дополнительный источник для ProtocolLib и других плагинов Bukkit-экосистемы.
+  Зеркало CodeMC — дополнительный источник для плагинов Bukkit-экосистемы.
+
+### Добавление ProtocolLib в локальный репозиторий
+
+Проект уже содержит `java/libs/` с правильной структурой Maven-репозитория для ProtocolLib 4.8.0 (файл `java/libs/com/comphenix/protocol/ProtocolLib/4.8.0/ProtocolLib-4.8.0.jar`).
+
+Если вы хотите обновить JAR вручную (например, заменить stub на официальный релиз):
+
+1. Скачайте официальный `ProtocolLib.jar` с https://github.com/dmulloy2/ProtocolLib/releases/tag/4.8.0
+2. Поместите скачанный файл в корневую папку `libs/`:
+   ```
+   project/
+   ├── java/pom.xml
+   └── libs/
+       └── ProtocolLib-4.8.0.jar   ← сюда
+   ```
+3. Установите его в локальный Maven-репозиторий проекта:
+   ```bash
+   mvn install:install-file -Dfile=libs/ProtocolLib-4.8.0.jar -DgroupId=com.comphenix.protocol -DartifactId=ProtocolLib -Dversion=4.8.0 -Dpackaging=jar -DlocalRepositoryPath=java/libs
+   ```
+4. Убедитесь, что файл появился в `java/libs/com/comphenix/protocol/ProtocolLib/4.8.0/`
 
 ---
 
@@ -287,40 +310,31 @@ python model_trainer.py
 
 ### Проблема: "Could not resolve dependencies / ProtocolLib not found"
 
-**Причина:** Была указана несуществующая версия ProtocolLib (5.0.0 или 5.1.0).
+**Причина:** ProtocolLib 4.8.0 недоступен в публичных Maven-репозиториях. Он теперь поставляется через локальный репозиторий проекта.
 
-**Решение:** Используйте версию `4.8.0` в `java/pom.xml` и убедитесь, что все три репозитория прописаны:
+**Решение:** Проект уже содержит `java/libs/` с ProtocolLib 4.8.0 в правильном Maven-формате. Убедитесь, что в `java/pom.xml` прописан локальный репозиторий:
 
 ```xml
 <repositories>
     <repository>
-        <id>spigot-repo</id>
-        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        <id>local-libs</id>
+        <url>file://${project.basedir}/libs</url>
     </repository>
-    <repository>
-        <id>dmulloy2-repo</id>
-        <url>https://repo.dmulloy2.net/repository/public/</url>
-    </repository>
-    <repository>
-        <id>codemc-repo</id>
-        <url>https://repo.codemc.io/repository/maven-public/</url>
-    </repository>
+    <!-- ... остальные репозитории ... -->
 </repositories>
 ```
 
-```xml
-<dependency>
-    <groupId>com.comphenix.protocol</groupId>
-    <artifactId>ProtocolLib</artifactId>
-    <version>4.8.0</version>
-    <scope>provided</scope>
-</dependency>
-```
-
-Затем принудительно обновите зависимости:
+Если JAR всё равно не находится, установите его вручную:
 
 ```bash
-mvn dependency:resolve -U
+mvn install:install-file -Dfile=libs/ProtocolLib-4.8.0.jar -DgroupId=com.comphenix.protocol -DartifactId=ProtocolLib -Dversion=4.8.0 -Dpackaging=jar -DlocalRepositoryPath=java/libs
+```
+
+Затем повторите сборку:
+
+```bash
+cd java
+mvn clean package
 ```
 
 ### Проблема: "Cannot compile Java" / "BUILD FAILURE"
