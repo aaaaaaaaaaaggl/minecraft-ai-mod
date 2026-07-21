@@ -21,23 +21,25 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
- * Manages the AI compass item lifecycle.
+ * Manages the AI wooden sword item lifecycle.
  *
  * <ul>
- *   <li>Gives the compass to each player on their <em>first</em> join.
+ *   <li>Gives the wooden sword to each player on their <em>first</em> join.</li>
  *   <li>Gives it again whenever the player respawns after death.</li>
- *   <li>Opens the {@link AIBotMenu} on a right-click with the compass.</li>
+ *   <li>Opens the {@link AIBotMenu} on a right-click with the wooden sword.</li>
  * </ul>
  *
- * <p>The set of players who have already received their first compass is
- * persisted in {@code data/compass_players.yml}.
+ * <p>The set of players who have already received their first wooden sword is
+ * persisted in {@code data/ai_item_tracking.yml}.
  */
-public class CompassListener implements Listener {
+public class WoodenSwordListener implements Listener {
 
-    private static final Logger LOGGER = Logger.getLogger("CompassListener");
+    private static final Logger LOGGER = Logger.getLogger("WoodenSwordListener");
+    private static final String CFG_GIVE_ON_FIRST_JOIN = "ai-bot.give-wooden-sword-on-first-join";
+    private static final String CFG_GIVE_ON_RESPAWN = "ai-bot.give-wooden-sword-on-respawn";
 
-    /** Display name used to identify our compass. */
-    static final String COMPASS_NAME = "§r§fAI";
+    /** Display name used to identify our wooden sword. */
+    static final String WOODEN_SWORD_NAME = "§r§fAI";
 
     private final JavaPlugin   plugin;
     private final MenuListener menuListener;
@@ -45,18 +47,18 @@ public class CompassListener implements Listener {
     private final File              dataFile;
     private final FileConfiguration data;
 
-    public CompassListener(JavaPlugin plugin, MenuListener menuListener) {
+    public WoodenSwordListener(JavaPlugin plugin, MenuListener menuListener) {
         this.plugin       = plugin;
         this.menuListener = menuListener;
 
-        dataFile = new File(plugin.getDataFolder(), "compass_players.yml");
+        dataFile = new File(plugin.getDataFolder(), "ai_item_tracking.yml");
         if (!dataFile.exists()) {
             File parent = dataFile.getParentFile();
             if (!parent.exists() && !parent.mkdirs()) {
                 LOGGER.warning("Could not create data directory: " + parent.getAbsolutePath());
             }
             try { dataFile.createNewFile(); } catch (IOException e) {
-                LOGGER.warning("Could not create compass_players.yml: " + e.getMessage());
+                LOGGER.warning("Could not create ai_item_tracking.yml: " + e.getMessage());
             }
         }
         data = YamlConfiguration.loadConfiguration(dataFile);
@@ -65,29 +67,33 @@ public class CompassListener implements Listener {
     // ── Events ─────────────────────────────────────────────────────────────────
 
     /**
-     * Give the compass the very first time a player joins.
+     * Give the wooden sword the very first time a player joins.
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
+        if (!plugin.getConfig().getBoolean(CFG_GIVE_ON_FIRST_JOIN, true)) return;
+
         Player player = event.getPlayer();
-        if (!hasReceivedCompass(player.getUniqueId())) {
-            giveCompass(player);
+        if (!hasReceivedWoodenSword(player.getUniqueId())) {
+            giveWoodenSword(player);
             markReceived(player.getUniqueId());
         }
     }
 
     /**
-     * Give the compass again every time a player respawns after death.
+     * Give the wooden sword again every time a player respawns after death.
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
+        if (!plugin.getConfig().getBoolean(CFG_GIVE_ON_RESPAWN, true)) return;
+
         Player player = event.getPlayer();
         // Delay by 1 tick so the inventory is fully restored before we add the item
-        org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> giveCompass(player));
+        org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> giveWoodenSword(player));
     }
 
     /**
-     * Open the menu when the player right-clicks with the AI compass.
+     * Open the menu when the player right-clicks with the AI wooden sword.
      */
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent event) {
@@ -95,7 +101,7 @@ public class CompassListener implements Listener {
         if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
 
         ItemStack item = event.getItem();
-        if (!isAICompass(item)) return;
+        if (!isAIWoodenSword(item)) return;
 
         event.setCancelled(true);
         menuListener.openMenu(event.getPlayer());
@@ -104,33 +110,33 @@ public class CompassListener implements Listener {
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     /**
-     * Add one AI compass to the player's inventory (first available slot).
-     * If the inventory is full the compass is dropped at their feet.
+     * Add one AI wooden sword to the player's inventory (first available slot).
+     * If the inventory is full the wooden sword is dropped at their feet.
      */
-    public static void giveCompass(Player player) {
-        ItemStack compass = AIBotMenu.makeCompass();
+    public static void giveWoodenSword(Player player) {
+        ItemStack woodenSword = AIBotMenu.makeAIWoodenSword();
         java.util.HashMap<Integer, ItemStack> leftovers =
-                player.getInventory().addItem(compass);
+                player.getInventory().addItem(woodenSword);
         if (!leftovers.isEmpty()) {
             // Drop at feet if no space
-            player.getWorld().dropItem(player.getLocation(), compass);
+            player.getWorld().dropItem(player.getLocation(), woodenSword);
         }
-        LOGGER.fine("Выдан компас AI для " + player.getName());
+        LOGGER.fine("Выдан деревянный меч AI для " + player.getName());
     }
 
     /**
-     * Returns {@code true} if {@code item} is the AI compass (compass material
-     * with display name matching {@link #COMPASS_NAME}).
+     * Returns {@code true} if {@code item} is the AI wooden sword
+     * (wooden sword material with display name matching {@link #WOODEN_SWORD_NAME}).
      */
-    public static boolean isAICompass(ItemStack item) {
-        if (item == null || item.getType() != Material.COMPASS) return false;
+    public static boolean isAIWoodenSword(ItemStack item) {
+        if (item == null || item.getType() != Material.WOODEN_SWORD) return false;
         ItemMeta meta = item.getItemMeta();
-        return meta != null && COMPASS_NAME.equals(meta.getDisplayName());
+        return meta != null && WOODEN_SWORD_NAME.equals(meta.getDisplayName());
     }
 
     // ── Persistence ────────────────────────────────────────────────────────────
 
-    private boolean hasReceivedCompass(UUID uuid) {
+    private boolean hasReceivedWoodenSword(UUID uuid) {
         return data.getBoolean(uuid.toString(), false);
     }
 
@@ -139,7 +145,7 @@ public class CompassListener implements Listener {
         try {
             data.save(dataFile);
         } catch (IOException e) {
-            LOGGER.warning("Could not save compass_players.yml: " + e.getMessage());
+            LOGGER.warning("Could not save ai_item_tracking.yml: " + e.getMessage());
         }
     }
 }

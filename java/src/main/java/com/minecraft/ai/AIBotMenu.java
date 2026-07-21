@@ -386,13 +386,13 @@ public class AIBotMenu implements InventoryHolder {
         }
     }
 
-    // ── Compass factory (static) ──────────────────────────────────────────────
+    // ── Wooden sword factory (static) ─────────────────────────────────────────
 
     /**
-     * Build the compass item that opens the AI Bot menu.
+     * Build the wooden sword item that opens the AI Bot menu.
      */
-    public static ItemStack makeCompass() {
-        ItemStack item = new ItemStack(Material.COMPASS);
+    public static ItemStack makeAIWoodenSword() {
+        ItemStack item = new ItemStack(Material.WOODEN_SWORD);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName("§r§fAI");

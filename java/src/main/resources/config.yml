@@ -17,10 +17,10 @@ plugin:
 ai-bot:
   # Ник NPC (FakePlayerNPC через ProtocolLib)
   npc-name: "AI_bot"
-  # Компас выдаётся при первом входе каждому игроку
-  give-compass-on-first-join: true
-  # Компас выдаётся повторно при возрождении после смерти
-  give-compass-on-respawn: true
+  # Деревянный меч выдаётся при первом входе каждому игроку
+  give-wooden-sword-on-first-join: true
+  # Деревянный меч выдаётся повторно при возрождении после смерти
+  give-wooden-sword-on-respawn: true
 
 # Команды в чате, которые понимает AI
 chat-commands:
