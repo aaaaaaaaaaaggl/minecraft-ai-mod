@@ -115,6 +115,7 @@ Maven автоматически скачает все Java зависимост
 | Артефакт | Версия | Откуда скачивается |
 |---|---|---|
 | `spigot-api` | `1.20.1-R0.1-SNAPSHOT` | https://hub.spigotmc.org/nexus/ |
+| `ProtocolLib` | `4.8.0` | https://repo.dmulloy2.net/repository/public/ |
 | `okhttp` | `4.11.0` | Maven Central |
 | `gson` | `2.10.1` | Maven Central |
 
@@ -124,6 +125,19 @@ Maven автоматически скачает все Java зависимост
 cd java
 mvn dependency:resolve
 ```
+
+### Настроенные репозитории
+
+В `java/pom.xml` прописаны три репозитория:
+
+- **spigot-repo** — `https://hub.spigotmc.org/nexus/content/repositories/snapshots/`  
+  Используется для `spigot-api` (снапшоты Bukkit/Spigot).
+
+- **dmulloy2-repo** — `https://repo.dmulloy2.net/repository/public/`  
+  Официальный репозиторий ProtocolLib (dmulloy2). Содержит стабильные релизы, в том числе `4.8.0`.
+
+- **codemc-repo** — `https://repo.codemc.io/repository/maven-public/`  
+  Зеркало CodeMC — дополнительный источник для ProtocolLib и других плагинов Bukkit-экосистемы.
 
 ---
 
@@ -269,6 +283,44 @@ ps aux | grep ai_server.py
 ```bash
 cd python
 python model_trainer.py
+```
+
+### Проблема: "Could not resolve dependencies / ProtocolLib not found"
+
+**Причина:** Была указана несуществующая версия ProtocolLib (5.0.0 или 5.1.0).
+
+**Решение:** Используйте версию `4.8.0` в `java/pom.xml` и убедитесь, что все три репозитория прописаны:
+
+```xml
+<repositories>
+    <repository>
+        <id>spigot-repo</id>
+        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+    </repository>
+    <repository>
+        <id>dmulloy2-repo</id>
+        <url>https://repo.dmulloy2.net/repository/public/</url>
+    </repository>
+    <repository>
+        <id>codemc-repo</id>
+        <url>https://repo.codemc.io/repository/maven-public/</url>
+    </repository>
+</repositories>
+```
+
+```xml
+<dependency>
+    <groupId>com.comphenix.protocol</groupId>
+    <artifactId>ProtocolLib</artifactId>
+    <version>4.8.0</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+Затем принудительно обновите зависимости:
+
+```bash
+mvn dependency:resolve -U
 ```
 
 ### Проблема: "Cannot compile Java" / "BUILD FAILURE"

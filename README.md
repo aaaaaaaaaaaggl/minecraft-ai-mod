@@ -149,10 +149,21 @@ curl http://localhost:5000/info
 | Зависимость | Версия | Назначение | Scope |
 |---|---|---|---|
 | [spigot-api](https://www.spigotmc.org/wiki/buildtools/) | `1.20.1-R0.1-SNAPSHOT` | Bukkit/Spigot API — основной API для Minecraft плагинов. Предоставляет классы `Player`, `World`, `Block`, события и т.д. | `provided` |
+| [ProtocolLib](https://github.com/dmulloy2/ProtocolLib) | `4.8.0` | Библиотека для работы с пакетами протокола Minecraft — используется для создания NPC (FakePlayer) и отправки кастомных пакетов | `provided` |
 | [OkHttp](https://square.github.io/okhttp/) | `4.11.0` | HTTP-клиент для обращений к Python AI серверу (REST запросы) | `compile` |
 | [Gson](https://github.com/google/gson) | `2.10.1` | Сериализация и десериализация JSON (ответы AI сервера) | `compile` |
 
 > **Примечание о scope:** Зависимости с `scope: provided` уже присутствуют на сервере и не упаковываются в JAR. Зависимости с `scope: compile` упаковываются в итоговый JAR автоматически через `maven-shade-plugin` (настроен в `java/pom.xml`).
+
+### Maven репозитории
+
+В проекте настроены следующие репозитории в `java/pom.xml`:
+
+| ID | URL | Назначение |
+|---|---|---|
+| `spigot-repo` | `https://hub.spigotmc.org/nexus/content/repositories/snapshots/` | Spigot API (снапшоты) |
+| `dmulloy2-repo` | `https://repo.dmulloy2.net/repository/public/` | ProtocolLib (основной) |
+| `codemc-repo` | `https://repo.codemc.io/repository/maven-public/` | ProtocolLib (зеркало) и другие плагины |
 
 ### Python
 
@@ -171,7 +182,7 @@ curl http://localhost:5000/info
     <dependency>
         <groupId>com.comphenix.protocol</groupId>
         <artifactId>ProtocolLib</artifactId>
-        <version>5.1.0</version>
+        <version>4.8.0</version>
         <scope>provided</scope>
     </dependency>
 
@@ -179,7 +190,7 @@ curl http://localhost:5000/info
     <dependency>
         <groupId>net.citizensnpcs</groupId>
         <artifactId>citizens-main</artifactId>
-        <version>2.0.33-SNAPSHOT</version>
+        <version>2.0.28</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
