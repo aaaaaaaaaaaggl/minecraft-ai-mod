@@ -142,6 +142,49 @@ curl http://localhost:5000/info
 - **Spigot/Paper:** для сервера
 - по умолчанию Spigot
 
+## 📦 Зависимости
+
+### Java (Maven)
+
+| Зависимость | Версия | Назначение | Scope |
+|---|---|---|---|
+| [spigot-api](https://www.spigotmc.org/wiki/buildtools/) | `1.20.1-R0.1-SNAPSHOT` | Bukkit/Spigot API — основной API для Minecraft плагинов. Предоставляет классы `Player`, `World`, `Block`, события и т.д. | `provided` |
+| [OkHttp](https://square.github.io/okhttp/) | `4.11.0` | HTTP-клиент для обращений к Python AI серверу (REST запросы) | `compile` |
+| [Gson](https://github.com/google/gson) | `2.10.1` | Сериализация и десериализация JSON (ответы AI сервера) | `compile` |
+
+> **Примечание о scope:** Зависимости с `scope: provided` уже присутствуют на сервере и не упаковываются в JAR. Зависимости с `scope: compile` упаковываются в итоговый JAR автоматически через `maven-shade-plugin` (настроен в `java/pom.xml`).
+
+### Python
+
+| Пакет | Версия | Назначение |
+|---|---|---|
+| Flask | `>=2.0` | HTTP сервер для AI API |
+| TensorFlow | `>=2.0` | Нейросетевая модель |
+| numpy | `>=1.20` | Математические вычисления |
+| requests | `>=2.25` | HTTP запросы |
+
+### Как добавить новую зависимость в `pom.xml`
+
+```xml
+<dependencies>
+    <!-- Пример: добавить ProtocolLib -->
+    <dependency>
+        <groupId>com.comphenix.protocol</groupId>
+        <artifactId>ProtocolLib</artifactId>
+        <version>5.1.0</version>
+        <scope>provided</scope>
+    </dependency>
+
+    <!-- Пример: добавить Citizens (NPC) -->
+    <dependency>
+        <groupId>net.citizensnpcs</groupId>
+        <artifactId>citizens-main</artifactId>
+        <version>2.0.33-SNAPSHOT</version>
+        <scope>provided</scope>
+    </dependency>
+</dependencies>
+```
+
 ## 🔧 Конфигурация
 
 Отредактируйте `config/ai_config.yaml`:
