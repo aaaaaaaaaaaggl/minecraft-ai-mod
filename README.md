@@ -149,7 +149,7 @@ curl http://localhost:5000/info
 | Зависимость | Версия | Назначение | Scope |
 |---|---|---|---|
 | [spigot-api](https://www.spigotmc.org/wiki/buildtools/) | `1.20.1-R0.1-SNAPSHOT` | Bukkit/Spigot API — основной API для Minecraft плагинов. Предоставляет классы `Player`, `World`, `Block`, события и т.д. | `provided` |
-| [ProtocolLib](https://github.com/dmulloy2/ProtocolLib) | `4.8.0` | Библиотека для работы с пакетами протокола Minecraft — используется для создания NPC (FakePlayer) и отправки кастомных пакетов | `provided` |
+| [Citizens](https://citizensnpcs.co/) | `2.0.28-SNAPSHOT` | Библиотека для создания NPC (неигровых персонажей) — используется для спавна AI Bot с ником `AI_bot` и скином Стива | `provided` |
 | [OkHttp](https://square.github.io/okhttp/) | `4.11.0` | HTTP-клиент для обращений к Python AI серверу (REST запросы) | `compile` |
 | [Gson](https://github.com/google/gson) | `2.10.1` | Сериализация и десериализация JSON (ответы AI сервера) | `compile` |
 
@@ -162,8 +162,7 @@ curl http://localhost:5000/info
 | ID | URL | Назначение |
 |---|---|---|
 | `spigot-repo` | `https://hub.spigotmc.org/nexus/content/repositories/snapshots/` | Spigot API (снапшоты) |
-| `dmulloy2-repo` | `https://repo.dmulloy2.net/repository/public/` | ProtocolLib (основной) |
-| `codemc-repo` | `https://repo.codemc.io/repository/maven-public/` | ProtocolLib (зеркало) и другие плагины |
+| `citizens-repo` | `https://repo.citizensnpcs.co/` | Citizens (NPC библиотека) |
 
 ### Python
 
@@ -178,19 +177,12 @@ curl http://localhost:5000/info
 
 ```xml
 <dependencies>
-    <!-- Пример: добавить ProtocolLib -->
-    <dependency>
-        <groupId>com.comphenix.protocol</groupId>
-        <artifactId>ProtocolLib</artifactId>
-        <version>4.8.0</version>
-        <scope>provided</scope>
-    </dependency>
-
     <!-- Пример: добавить Citizens (NPC) -->
     <dependency>
         <groupId>net.citizensnpcs</groupId>
         <artifactId>citizens-main</artifactId>
-        <version>2.0.28</version>
+        <version>2.0.28-SNAPSHOT</version>
+        <type>jar</type>
         <scope>provided</scope>
     </dependency>
 </dependencies>

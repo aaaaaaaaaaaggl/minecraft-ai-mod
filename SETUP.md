@@ -115,7 +115,7 @@ Maven автоматически скачает все Java зависимост
 | Артефакт | Версия | Откуда скачивается |
 |---|---|---|
 | `spigot-api` | `1.20.1-R0.1-SNAPSHOT` | https://hub.spigotmc.org/nexus/ |
-| `ProtocolLib` | `4.8.0` | Локальный репозиторий (`java/libs/`) |
+| `citizens-main` | `2.0.28-SNAPSHOT` | https://repo.citizensnpcs.co/ |
 | `okhttp` | `4.11.0` | Maven Central |
 | `gson` | `2.10.1` | Maven Central |
 
@@ -130,37 +130,11 @@ mvn dependency:resolve
 
 В `java/pom.xml` прописаны следующие репозитории:
 
-- **local-libs** — `file://${project.basedir}/libs`  
-  Локальный файловый репозиторий проекта. Содержит `ProtocolLib 4.8.0`. Работает без интернета.
-
 - **spigot-repo** — `https://hub.spigotmc.org/nexus/content/repositories/snapshots/`  
   Используется для `spigot-api` (снапшоты Bukkit/Spigot).
 
-- **dmulloy2-repo** — `https://repo.dmulloy2.net/repository/public/`  
-  Официальный репозиторий ProtocolLib (dmulloy2).
-
-- **codemc-repo** — `https://repo.codemc.io/repository/maven-public/`  
-  Зеркало CodeMC — дополнительный источник для плагинов Bukkit-экосистемы.
-
-### Добавление ProtocolLib в локальный репозиторий
-
-Проект уже содержит `java/libs/` с правильной структурой Maven-репозитория для ProtocolLib 4.8.0 (файл `java/libs/com/comphenix/protocol/ProtocolLib/4.8.0/ProtocolLib-4.8.0.jar`).
-
-Если вы хотите обновить JAR вручную (например, заменить stub на официальный релиз):
-
-1. Скачайте официальный `ProtocolLib.jar` с https://github.com/dmulloy2/ProtocolLib/releases/tag/4.8.0
-2. Поместите скачанный файл в корневую папку `libs/`:
-   ```
-   project/
-   ├── java/pom.xml
-   └── libs/
-       └── ProtocolLib-4.8.0.jar   ← сюда
-   ```
-3. Установите его в локальный Maven-репозиторий проекта:
-   ```bash
-   mvn install:install-file -Dfile=libs/ProtocolLib-4.8.0.jar -DgroupId=com.comphenix.protocol -DartifactId=ProtocolLib -Dversion=4.8.0 -Dpackaging=jar -DlocalRepositoryPath=java/libs
-   ```
-4. Убедитесь, что файл появился в `java/libs/com/comphenix/protocol/ProtocolLib/4.8.0/`
+- **citizens-repo** — `https://repo.citizensnpcs.co/`  
+  Официальный репозиторий Citizens — библиотеки для создания NPC.
 
 ---
 
@@ -201,6 +175,16 @@ java -jar BuildTools.jar --rev 1.20.1
 ```bash
 cp java/target/ai-mod-1.0.0.jar /path/to/minecraft-server/plugins/
 ```
+
+### Шаг 2.1: Установите Citizens на сервер
+
+Плагин использует Citizens для создания NPC (AI Bot). Скачайте Citizens и скопируйте его в папку `plugins`:
+
+1. Скачайте `Citizens.jar` с [https://citizensnpcs.co/](https://citizensnpcs.co/) или с [GitHub Releases](https://github.com/CitizensDev/Citizens2/releases)
+2. Поместите скачанный файл в папку `plugins` сервера:
+   ```bash
+   cp Citizens.jar /path/to/minecraft-server/plugins/
+   ```
 
 ### Шаг 3: Запустите сервер
 
@@ -308,26 +292,19 @@ cd python
 python model_trainer.py
 ```
 
-### Проблема: "Could not resolve dependencies / ProtocolLib not found"
+### Проблема: "Could not resolve dependencies / citizens-main not found"
 
-**Причина:** ProtocolLib 4.8.0 недоступен в публичных Maven-репозиториях. Он теперь поставляется через локальный репозиторий проекта.
+**Причина:** Citizens не может быть загружен из репозитория.
 
-**Решение:** Проект уже содержит `java/libs/` с ProtocolLib 4.8.0 в правильном Maven-формате. Убедитесь, что в `java/pom.xml` прописан локальный репозиторий:
+**Решение:** Убедитесь, что в `java/pom.xml` прописан репозиторий Citizens:
 
 ```xml
 <repositories>
     <repository>
-        <id>local-libs</id>
-        <url>file://${project.basedir}/libs</url>
+        <id>citizens-repo</id>
+        <url>https://repo.citizensnpcs.co/</url>
     </repository>
-    <!-- ... остальные репозитории ... -->
 </repositories>
-```
-
-Если JAR всё равно не находится, установите его вручную:
-
-```bash
-mvn install:install-file -Dfile=libs/ProtocolLib-4.8.0.jar -DgroupId=com.comphenix.protocol -DartifactId=ProtocolLib -Dversion=4.8.0 -Dpackaging=jar -DlocalRepositoryPath=java/libs
 ```
 
 Затем повторите сборку:
