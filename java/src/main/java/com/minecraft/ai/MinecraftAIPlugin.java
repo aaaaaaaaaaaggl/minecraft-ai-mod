@@ -121,7 +121,7 @@ public class MinecraftAIPlugin extends JavaPlugin {
 
                 sender.sendMessage("§cНеизвестная команда: " + args[0]);
                 sender.sendMessage("§eИспользование: /ai_bot <combat|fight>");
-                return false;
+                return true;
             });
         }
     }

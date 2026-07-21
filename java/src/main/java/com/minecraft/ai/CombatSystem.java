@@ -111,8 +111,9 @@ public class CombatSystem {
             if (entity instanceof Monster) {
                 Monster monster = (Monster) entity;
                 monster.damage(DAMAGE_PER_HIT, player);
+                double healthLeft = monster.isDead() ? 0.0 : monster.getHealth();
                 LOGGER.info("⚔️  " + player.getName() + " атаковал " + monster.getType().name()
-                        + " (" + monster.getHealth() + " HP осталось)");
+                        + " (" + healthLeft + " HP осталось)");
                 attacked++;
             }
         }
