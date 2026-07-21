@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.comphenix.protocol</groupId>
+    <artifactId>ProtocolLib</artifactId>
+    <version>4.8.0</version>
+    <packaging>jar</packaging>
+    <name>ProtocolLib</name>
+    <description>Provides a way to intercept and modify Minecraft packets</description>
+</project>
