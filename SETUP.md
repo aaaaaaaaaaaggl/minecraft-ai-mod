@@ -2,14 +2,75 @@
 
 ## Требования
 
-- **Python 3.8+**
-- **Java 11+**
-- **Minecraft 1.19+**
-- **Maven** (для сборки Java плагина)
+| Инструмент | Минимальная версия | Назначение |
+|---|---|---|
+| Java JDK | 11+ | Компиляция и запуск плагина |
+| Apache Maven | 3.8+ | Сборка Java проекта |
+| Python | 3.8+ | AI сервер |
+| Minecraft (Spigot/Paper) | 1.19+ | Игровой сервер |
 
 ---
 
-## 1️⃣ Установка Python AI Server
+## 1️⃣ Установка JDK
+
+### Windows
+
+1. Скачайте JDK 11+ с [https://adoptium.net/](https://adoptium.net/) или [https://www.oracle.com/java/technologies/downloads/](https://www.oracle.com/java/technologies/downloads/)
+2. Запустите установщик и следуйте инструкциям
+3. Проверьте установку:
+
+```cmd
+java -version
+javac -version
+```
+
+### Linux (Ubuntu/Debian)
+
+```bash
+sudo apt update
+sudo apt install openjdk-17-jdk
+java -version
+```
+
+### macOS
+
+```bash
+brew install openjdk@17
+java -version
+```
+
+---
+
+## 2️⃣ Установка Apache Maven
+
+### Windows
+
+1. Скачайте Maven с [https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi) (выберите `Binary zip archive`)
+2. Распакуйте в `C:\Program Files\Maven\`
+3. Добавьте `C:\Program Files\Maven\bin` в системную переменную `PATH`
+4. Проверьте:
+
+```cmd
+mvn -version
+```
+
+### Linux (Ubuntu/Debian)
+
+```bash
+sudo apt install maven
+mvn -version
+```
+
+### macOS
+
+```bash
+brew install maven
+mvn -version
+```
+
+---
+
+## 3️⃣ Установка Python AI Server
 
 ### Шаг 1: Установка зависимостей
 
@@ -17,6 +78,11 @@
 cd python
 pip install -r requirements.txt
 ```
+
+Основные Python пакеты (`requirements.txt`):
+- `Flask` — HTTP сервер для AI API
+- `tensorflow` — нейросетевая модель
+- `numpy` — математические вычисления
 
 ### Шаг 2: Обучение модели (опционально)
 
@@ -42,43 +108,71 @@ python ai_server_updated2.0.py
 
 ---
 
-## 2️⃣ Сборка Java плагина
+## 4️⃣ Загрузка зависимостей Maven
 
-### Шаг 1: Установка Maven
+Maven автоматически скачает все Java зависимости при первой сборке. Зависимости проекта:
 
-Скачайте Maven: https://maven.apache.org/download.cgi
+| Артефакт | Версия | Откуда скачивается |
+|---|---|---|
+| `spigot-api` | `1.20.1-R0.1-SNAPSHOT` | https://hub.spigotmc.org/nexus/ |
+| `okhttp` | `4.11.0` | Maven Central |
+| `gson` | `2.10.1` | Maven Central |
 
-### Шаг 2: Сборка плагина
+Репозитории уже прописаны в `java/pom.xml`. Просто запустите сборку — Maven скачает всё сам:
+
+```bash
+cd java
+mvn dependency:resolve
+```
+
+---
+
+## 5️⃣ Сборка Java плагина
 
 ```bash
 cd java
 mvn clean package
 ```
 
-JAR файл будет создан в `java/target/ai-mod-1.0.0.jar`
+После успешной сборки JAR файл будет создан в `java/target/ai-mod-1.0.0.jar`
 
-### Шаг 3: Установка в Minecraft
-
-Скопируйте JAR файл в папку `plugins` вашего сервера:
-```bash
-cp java/target/ai-mod-1.0.0.jar /path/to/minecraft/plugins/
+Вывод при успехе:
+```
+[INFO] BUILD SUCCESS
+[INFO] Total time: X.XXX s
 ```
 
 ---
 
-## 3️⃣ Запуск Minecraft сервера
+## 6️⃣ Установка плагина на сервер Minecraft
 
-### Для Spigot/Paper:
+### Шаг 1: Скачайте Spigot/Paper сервер
 
-1. Скачайте Spigot BuildTools
-2. Поместите плагин в папку `plugins`
-3. Запустите сервер
-
+**Spigot** (нужен BuildTools):
 ```bash
-java -Xmx1024M -Xms1024M -jar spigot.jar nogui
+# Скачайте BuildTools.jar с https://hub.spigotmc.org/jenkins/job/BuildTools/
+java -jar BuildTools.jar --rev 1.20.1
 ```
 
-### Проверка
+**Paper** (рекомендуется, проще):
+- Скачайте готовый JAR с [https://papermc.io/downloads](https://papermc.io/downloads)
+
+### Шаг 2: Установите плагин
+
+Скопируйте JAR в папку `plugins` сервера:
+
+```bash
+cp java/target/ai-mod-1.0.0.jar /path/to/minecraft-server/plugins/
+```
+
+### Шаг 3: Запустите сервер
+
+```bash
+cd /path/to/minecraft-server
+java -Xmx2G -Xms1G -jar paper.jar nogui
+```
+
+### Проверка загрузки плагина
 
 В логах сервера вы должны увидеть:
 ```
@@ -88,15 +182,15 @@ java -Xmx1024M -Xms1024M -jar spigot.jar nogui
 
 ---
 
-## 4️⃣ Использование
+## 7️⃣ Использование
 
-### Команды:
+### Команды в игре:
 
 ```
 /ai status        - Статус AI сервера
 /ai enable        - Включить AI
 /ai disable       - Выключить AI
-/ai build <type>  - Заказать построение
+/ai build <type>  - Заказать построение (house / tower / mansion / bridge)
 ```
 
 ### API Endpoints:
@@ -177,21 +271,30 @@ cd python
 python model_trainer.py
 ```
 
-### Проблема: "Cannot compile Java"
+### Проблема: "Cannot compile Java" / "BUILD FAILURE"
 
-**Решение:** Проверьте версию Java:
+**Решение:** Проверьте версию Java и Maven:
 ```bash
-java -version
+java -version   # требуется 11+
+mvn -version    # требуется 3.8+
 ```
 
-Требуется Java 11 или выше.
+Если Maven не может скачать зависимости — проверьте интернет-соединение и репозиторий:
+```bash
+mvn dependency:resolve -U
+```
+
+### Проблема: "org.bukkit.block.UPPER / LOWER not found"
+
+**Решение:** Убедитесь что используется `Bisected.Half.valueOf("UPPER")` вместо `Bisected.Half.UPPER` в исходном коде. В данном проекте это уже исправлено в методе `placeDoor()` файла `ActionExecutor.java`.
 
 ---
 
 ## 📚 Дополнительная информация
 
 - Документация TensorFlow: https://www.tensorflow.org/
-- Документация Spigot: https://www.spigotmc.org/wiki/
+- Документация Spigot API: https://hub.spigotmc.org/javadocs/spigot/
+- Документация Paper: https://docs.papermc.io/
 - REST API примеры в папке `examples/`
 
 ---
