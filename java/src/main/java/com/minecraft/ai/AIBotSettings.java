@@ -34,7 +34,15 @@ public class AIBotSettings {
     private String spawnCommand  = "";
     private String despawnCommand = "";
 
-    // ── Persistence ──────────────────────────────────────────────────────────
+    // ── Range / damage limits ─────────────────────────────────────────────────
+
+    /** Minimum and maximum allowed attack range in blocks. */
+    private static final double MIN_ATTACK_RANGE   = 1.0;
+    private static final double MAX_ATTACK_RANGE   = 50.0;
+
+    /** Minimum and maximum allowed attack damage per hit. */
+    private static final double MIN_ATTACK_DAMAGE  = 1.0;
+    private static final double MAX_ATTACK_DAMAGE  = 20.0;
     private static File     dataFile;
     private static FileConfiguration data;
 
@@ -44,7 +52,10 @@ public class AIBotSettings {
     public static void init(JavaPlugin plugin) {
         dataFile = new File(plugin.getDataFolder(), "ai_bot_settings.yml");
         if (!dataFile.exists()) {
-            dataFile.getParentFile().mkdirs();
+            File parent = dataFile.getParentFile();
+            if (!parent.exists() && !parent.mkdirs()) {
+                LOGGER.warning("Could not create data directory: " + parent.getAbsolutePath());
+            }
             try {
                 dataFile.createNewFile();
             } catch (IOException e) {
@@ -117,10 +128,10 @@ public class AIBotSettings {
     public void setAttackPlayers(boolean v) { this.attackPlayers = v; }
 
     public double getAttackRange()        { return attackRange; }
-    public void setAttackRange(double v)  { this.attackRange = Math.max(1.0, Math.min(50.0, v)); }
+    public void setAttackRange(double v)  { this.attackRange  = Math.max(MIN_ATTACK_RANGE,  Math.min(MAX_ATTACK_RANGE,  v)); }
 
     public double getAttackDamage()       { return attackDamage; }
-    public void setAttackDamage(double v) { this.attackDamage = Math.max(1.0, Math.min(20.0, v)); }
+    public void setAttackDamage(double v) { this.attackDamage = Math.max(MIN_ATTACK_DAMAGE, Math.min(MAX_ATTACK_DAMAGE, v)); }
 
     public boolean isAutoBuild()        { return autoBuild; }
     public void setAutoBuild(boolean v) { this.autoBuild = v; }

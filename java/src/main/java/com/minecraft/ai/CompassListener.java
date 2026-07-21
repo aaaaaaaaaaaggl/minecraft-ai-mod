@@ -51,7 +51,10 @@ public class CompassListener implements Listener {
 
         dataFile = new File(plugin.getDataFolder(), "compass_players.yml");
         if (!dataFile.exists()) {
-            dataFile.getParentFile().mkdirs();
+            File parent = dataFile.getParentFile();
+            if (!parent.exists() && !parent.mkdirs()) {
+                LOGGER.warning("Could not create data directory: " + parent.getAbsolutePath());
+            }
             try { dataFile.createNewFile(); } catch (IOException e) {
                 LOGGER.warning("Could not create compass_players.yml: " + e.getMessage());
             }

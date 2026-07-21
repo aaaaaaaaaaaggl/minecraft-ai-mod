@@ -184,19 +184,37 @@ public class MenuListener implements Listener {
 
     // ── Chat-input prompt ─────────────────────────────────────────────────────
 
+    /** Seconds to wait for a chat response before auto-cancelling the prompt. */
+    private static final long CHAT_PROMPT_TIMEOUT_TICKS = 20L * 30; // 30 seconds
+
     /**
      * Registers a one-shot chat listener that captures the next message from
      * {@code player} and stores it in the given {@code field} of their settings.
+     * The temporary listener is always unregistered — either on capture or after
+     * {@link #CHAT_PROMPT_TIMEOUT_TICKS} ticks — to prevent handler leaks.
+     *
+     * <p>{@code @SuppressWarnings("deprecation")} is needed because
+     * {@code AsyncPlayerChatEvent} is deprecated in Spigot 1.19+ (replaced by
+     * {@code AsyncChatEvent}) but remains the most portable option across all
+     * 1.20.x builds without requiring Paper-specific API.
      */
     @SuppressWarnings("deprecation")
     private void waitForChatInput(Player player, UUID uuid, String field) {
-        // We register a temporary listener via Bukkit's event system.
-        // The listener auto-unregisters after capturing one message.
         org.bukkit.event.Listener tempListener = new org.bukkit.event.Listener() {};
         Bukkit.getPluginManager().registerEvents(tempListener, plugin);
 
-        // Store state in local variables accessible from the lambda
         final boolean[] captured = {false};
+
+        // Timeout task: auto-unregister if no input arrives within 30 seconds
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!captured[0]) {
+                captured[0] = true;
+                org.bukkit.event.HandlerList.unregisterAll(tempListener);
+                if (player.isOnline()) {
+                    player.sendMessage("§c⏰ Время ввода истекло. Попробуйте снова.");
+                }
+            }
+        }, CHAT_PROMPT_TIMEOUT_TICKS);
 
         Bukkit.getPluginManager().registerEvent(
                 org.bukkit.event.player.AsyncPlayerChatEvent.class,

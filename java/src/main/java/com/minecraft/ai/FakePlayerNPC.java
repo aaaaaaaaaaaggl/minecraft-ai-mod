@@ -62,8 +62,20 @@ public class FakePlayerNPC {
           + "MzhkNTEwZDRiZjhhNTc3YjQ1N2ZlZDMyMjY5ZTNhYjc1YTAyZjI0ZTBmMjciCiAg"
           + "ICB9CiAgfQp9";
 
-    // Entity IDs must be unique per server session; start high to avoid clashes
-    private static final AtomicInteger ENTITY_ID_COUNTER = new AtomicInteger(900_000);
+    /**
+     * Starting entity ID for fake NPCs.
+     * <p>Regular Minecraft entity IDs start from 1 and increment sequentially.
+     * Starting at 900 000 keeps our fake IDs well above any server-assigned IDs
+     * and reduces the risk of accidental collisions during a session.
+     */
+    private static final int ENTITY_ID_START = 900_000;
+    private static final AtomicInteger ENTITY_ID_COUNTER = new AtomicInteger(ENTITY_ID_START);
+
+    /**
+     * Delay in ticks before removing the fake player from the tab list.
+     * 20 ticks = 1 second — long enough for the client to finish loading the skin.
+     */
+    private static final long TABLIST_REMOVE_DELAY_TICKS = 20L;
 
     private final JavaPlugin plugin;
 
@@ -136,12 +148,12 @@ public class FakePlayerNPC {
         // 3. ENTITY_HEAD_ROTATION
         sendHeadRotation(manager, observer, loc.getYaw());
 
-        // 4. After 20 ticks (1 s) remove from tab list to keep tab clean
+        // 4. After TABLIST_REMOVE_DELAY_TICKS remove from tab list to keep tab clean
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (observer.isOnline()) {
                 sendPlayerInfoRemove(manager, observer);
             }
-        }, 20L);
+        }, TABLIST_REMOVE_DELAY_TICKS);
     }
 
     private void sendDespawnPackets(Player observer) {
