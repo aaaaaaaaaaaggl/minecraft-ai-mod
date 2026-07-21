@@ -55,7 +55,9 @@ public class FakePlayerNPC {
         NPCRegistry registry = CitizensAPI.getNPCRegistry();
         npc = registry.createNPC(EntityType.PLAYER, npcName);
 
-        // Apply Steve's default skin via the SkinTrait
+        // Apply Steve's default skin via the SkinTrait.
+        // setSkinName fetches the skin from Mojang's API using the Minecraft
+        // account name — requires internet access on the game server.
         SkinTrait skinTrait = npc.getOrAddTrait(SkinTrait.class);
         skinTrait.setSkinName("Steve");
 
@@ -69,6 +71,9 @@ public class FakePlayerNPC {
      */
     public void despawn() {
         if (!spawned || npc == null) return;
+        if (npc.isSpawned()) {
+            npc.despawn();
+        }
         npc.destroy();
         npc = null;
         spawned = false;
