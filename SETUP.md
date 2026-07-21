@@ -158,7 +158,7 @@ mvn dependency:resolve
    ```
 3. Установите его в локальный Maven-репозиторий проекта:
    ```bash
-   mvn install:install-file -Dfile=libs/ProtocolLib.jar -DgroupId=com.comphenix.protocol -DartifactId=ProtocolLib -Dversion=4.8.0 -Dpackaging=jar -DlocalRepositoryPath=java/libs
+   mvn install:install-file -Dfile=libs/ProtocolLib-4.8.0.jar -DgroupId=com.comphenix.protocol -DartifactId=ProtocolLib -Dversion=4.8.0 -Dpackaging=jar -DlocalRepositoryPath=java/libs
    ```
 4. Убедитесь, что файл появился в `java/libs/com/comphenix/protocol/ProtocolLib/4.8.0/`
 
@@ -327,7 +327,7 @@ python model_trainer.py
 Если JAR всё равно не находится, установите его вручную:
 
 ```bash
-mvn install:install-file -Dfile=libs/ProtocolLib.jar -DgroupId=com.comphenix.protocol -DartifactId=ProtocolLib -Dversion=4.8.0 -Dpackaging=jar -DlocalRepositoryPath=java/libs
+mvn install:install-file -Dfile=libs/ProtocolLib-4.8.0.jar -DgroupId=com.comphenix.protocol -DartifactId=ProtocolLib -Dversion=4.8.0 -Dpackaging=jar -DlocalRepositoryPath=java/libs
 ```
 
 Затем повторите сборку:
