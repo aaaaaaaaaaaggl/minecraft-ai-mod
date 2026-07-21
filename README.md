@@ -188,7 +188,7 @@ curl http://localhost:5000/info
     <dependency>
         <groupId>net.citizensnpcs</groupId>
         <artifactId>citizens-main</artifactId>
-        <version>2.0.28</version>
+        <version>2.0.33-SNAPSHOT</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
