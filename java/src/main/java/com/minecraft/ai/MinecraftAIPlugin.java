@@ -141,6 +141,16 @@ public class MinecraftAIPlugin extends JavaPlugin {
                     return true;
                 }
 
+                if (sub.equals("follow")) {
+                    aiPlayerManager.followPlayer(player);
+                    return true;
+                }
+
+                if (sub.equals("stop") || sub.equals("unfollow")) {
+                    aiPlayerManager.stopFollowing(player);
+                    return true;
+                }
+
                 if (sub.equals("despawn")) {
                     aiPlayerManager.despawnAI(player);
                     return true;
@@ -153,7 +163,7 @@ public class MinecraftAIPlugin extends JavaPlugin {
                 }
 
                 sender.sendMessage("§cНеизвестная подкоманда: §e" + args[0]);
-                sender.sendMessage("§7Использование: §e/ai_bot [menu|combat|spawn|despawn|sword]");
+                sender.sendMessage("§7Использование: §e/ai_bot [menu|combat|spawn|follow|stop|despawn|sword]");
                 return true;
             });
         }
