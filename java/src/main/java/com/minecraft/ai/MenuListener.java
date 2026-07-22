@@ -36,6 +36,11 @@ public class MenuListener implements Listener {
         this.aiPlayerManager = aiPlayerManager;
     }
 
+    @Override
+    public String toString() {
+        return "MenuListener{plugin=" + plugin.getName() + "}";
+    }
+
     // ── Public API ─────────────────────────────────────────────────────────────
 
     /**
