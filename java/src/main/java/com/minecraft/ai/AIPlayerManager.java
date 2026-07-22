@@ -66,7 +66,7 @@ public class AIPlayerManager {
      */
     public void despawnAI(Player reporter) {
         if (fakePlayerNPC == null || !fakePlayerNPC.isSpawned()) {
-            if (reporter != null) reporter.sendMessage("§c🤖 AI не активен");
+            if (reporter != null) reporter.sendMessage("§c🤖 AI не активен.");
             return;
         }
         fakePlayerNPC.despawn();
@@ -85,7 +85,7 @@ public class AIPlayerManager {
 
     public void stopFollowing(Player player) {
         if (fakePlayerNPC == null || !fakePlayerNPC.isSpawned()) {
-            player.sendMessage("§c🤖 AI не активен");
+            player.sendMessage("§c🤖 AI не активен.");
             return;
         }
         fakePlayerNPC.stopFollowing();
