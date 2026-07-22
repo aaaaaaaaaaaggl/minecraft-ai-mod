@@ -14,7 +14,7 @@ commands:
     aliases: [ai-cmd]
   ai_bot:
     description: AI Bot команды и меню управления
-    usage: /ai_bot [menu|combat|spawn|despawn|compass]
+    usage: /ai_bot [menu|combat|spawn|despawn|sword]
   ai_menu:
     description: Открыть меню управления AI Bot
     usage: /ai_menu

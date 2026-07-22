@@ -14,7 +14,7 @@ public class MinecraftAIPlugin extends JavaPlugin {
     private AIPlayerManager aiPlayerManager;
     private ChatCommandListener chatListener;
     private MenuListener menuListener;
-    private CompassListener compassListener;
+    private WoodenSwordListener woodenSwordListener;
     
     @Override
     public void onEnable() {
@@ -53,8 +53,8 @@ public class MinecraftAIPlugin extends JavaPlugin {
         menuListener = new MenuListener(this, aiPlayerManager);
         getServer().getPluginManager().registerEvents(menuListener, this);
 
-        compassListener = new CompassListener(this, menuListener);
-        getServer().getPluginManager().registerEvents(compassListener, this);
+        woodenSwordListener = new WoodenSwordListener(this, menuListener);
+        getServer().getPluginManager().registerEvents(woodenSwordListener, this);
         
         // Зарегистрировать команды
         registerCommands();
@@ -146,14 +146,14 @@ public class MinecraftAIPlugin extends JavaPlugin {
                     return true;
                 }
 
-                if (sub.equals("compass")) {
-                    CompassListener.giveCompass(player);
-                    player.sendMessage("§a🧭 Компас AI выдан!");
+                if (sub.equals("sword")) {
+                    WoodenSwordListener.giveWoodenSword(player);
+                    player.sendMessage("§a🗡 Деревянный меч AI выдан!");
                     return true;
                 }
 
                 sender.sendMessage("§cНеизвестная подкоманда: §e" + args[0]);
-                sender.sendMessage("§7Использование: §e/ai_bot [menu|combat|spawn|despawn|compass]");
+                sender.sendMessage("§7Использование: §e/ai_bot [menu|combat|spawn|despawn|sword]");
                 return true;
             });
         }
