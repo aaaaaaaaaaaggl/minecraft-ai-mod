@@ -9,10 +9,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Defines a step-by-step block-placement plan for the VirtualPlayer.
+ * Defines a step-by-step block-placement plan for structure building.
  *
  * Each {@link BlockEntry} records the world location and target material
- * for one block.  Build methods on VirtualPlayer iterate through the list,
+ * for one block.  Build methods iterate through the list,
  * placing one block every few ticks so the construction looks animated.
  */
 public class StructurePlan {
