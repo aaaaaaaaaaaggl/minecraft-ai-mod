@@ -70,7 +70,7 @@ public class AIPlayerManager {
             return;
         }
         fakePlayerNPC.despawn();
-        if (reporter != null) reporter.sendMessage("§c🤖 Виртуальный игрок ушёл");
+        if (reporter != null) reporter.sendMessage("§c🤖 AI Bot §cушёл");
         LOGGER.info("AI despawned");
     }
 
