@@ -27,6 +27,7 @@ import java.util.logging.Logger;
  */
 public class FakePlayerNPC {
     private static final long ATTACK_INTERVAL_TICKS = 10L;
+    private static final long SETTINGS_REFRESH_INTERVAL_TICKS = 10L;
     private static final long TARGET_SCAN_INTERVAL_TICKS = 4L;
     private static final double FOLLOW_START_DISTANCE = 3.0;
     private static final double FOLLOW_STOP_DISTANCE = 2.0;
@@ -44,8 +45,10 @@ public class FakePlayerNPC {
     private UUID controllerUuid;
     private UUID followTargetUuid;
     private long attackCooldownTicks;
+    private long settingsReloadCooldownTicks;
     private long targetScanCooldownTicks;
     private LivingEntity cachedAttackTarget;
+    private AIBotSettings cachedSettings;
 
     public FakePlayerNPC(JavaPlugin plugin, String npcName) {
         this.plugin  = plugin;
@@ -109,6 +112,8 @@ public class FakePlayerNPC {
         if (!spawned || npc == null) return;
         controllerUuid = player.getUniqueId();
         followTargetUuid = player.getUniqueId();
+        cachedSettings = null;
+        settingsReloadCooldownTicks = 0L;
     }
 
     public void stopFollowing() {
@@ -140,11 +145,14 @@ public class FakePlayerNPC {
         if (attackCooldownTicks > 0L) {
             attackCooldownTicks--;
         }
+        if (settingsReloadCooldownTicks > 0L) {
+            settingsReloadCooldownTicks--;
+        }
         if (targetScanCooldownTicks > 0L) {
             targetScanCooldownTicks--;
         }
 
-        AIBotSettings settings = controllerUuid != null ? AIBotSettings.load(controllerUuid) : null;
+        AIBotSettings settings = getCurrentSettings();
         LivingEntity target = resolveAttackTarget(npcEntity, settings);
         if (target != null) {
             handleAttackTarget(npcEntity, target, settings);
@@ -248,14 +256,13 @@ public class FakePlayerNPC {
             return;
         }
 
-        if (npc.getNavigator().isNavigating()) {
-            npc.getNavigator().cancelNavigation();
-        }
-
         if (attackCooldownTicks > 0L) {
             return;
         }
 
+        if (npc.getNavigator().isNavigating()) {
+            npc.getNavigator().cancelNavigation();
+        }
         target.damage(settings.getAttackDamage(), npcEntity);
         attackCooldownTicks = ATTACK_INTERVAL_TICKS;
     }
@@ -283,12 +290,25 @@ public class FakePlayerNPC {
         }
     }
 
+    private AIBotSettings getCurrentSettings() {
+        if (controllerUuid == null) {
+            return null;
+        }
+        if (cachedSettings == null || settingsReloadCooldownTicks <= 0L) {
+            cachedSettings = AIBotSettings.load(controllerUuid);
+            settingsReloadCooldownTicks = SETTINGS_REFRESH_INTERVAL_TICKS;
+        }
+        return cachedSettings;
+    }
+
     private void resetBehaviorState() {
         controllerUuid = null;
         followTargetUuid = null;
         attackCooldownTicks = 0L;
+        settingsReloadCooldownTicks = 0L;
         targetScanCooldownTicks = 0L;
         cachedAttackTarget = null;
+        cachedSettings = null;
     }
 
     private static boolean isCitizensAvailable() {
