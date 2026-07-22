@@ -11,6 +11,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -97,14 +98,42 @@ public class WoodenSwordListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent event) {
+        // Only process main-hand events; in 1.9+ the event fires twice (HAND + OFF_HAND)
+        if (event.getHand() != EquipmentSlot.HAND) return;
+
         Action action = event.getAction();
+
+        // Explicit left-click guard with debug log
+        if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
+            ItemStack heldItem = event.getItem();
+            if (isAIWoodenSword(heldItem)) {
+                LOGGER.fine("[WoodenSwordListener] Левый клик на AI меч — меню не открывается ("
+                        + event.getPlayer().getName() + ")");
+            }
+            return;
+        }
+
         if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
 
-        ItemStack item = event.getItem();
-        if (!isAIWoodenSword(item)) return;
+        Player    player = event.getPlayer();
+        ItemStack item   = event.getItem();
 
+        // Log the item name for diagnostics
+        String itemName = (item != null && item.getItemMeta() != null)
+                ? item.getItemMeta().getDisplayName()
+                : "(нет предмета)";
+        LOGGER.fine("[WoodenSwordListener] Правый клик игрока " + player.getName()
+                + " с предметом: " + itemName);
+
+        if (!isAIWoodenSword(item)) {
+            LOGGER.fine("[WoodenSwordListener] Предмет не является AI мечом, игнорируется.");
+            return;
+        }
+
+        LOGGER.info("[WoodenSwordListener] AI меч распознан — открываем меню для " + player.getName());
         event.setCancelled(true);
-        menuListener.openMenu(event.getPlayer());
+        menuListener.openMenu(player);
+        LOGGER.fine("[WoodenSwordListener] openMenu() вызван для " + player.getName());
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────
@@ -147,5 +176,13 @@ public class WoodenSwordListener implements Listener {
         } catch (IOException e) {
             LOGGER.warning("Could not save ai_item_tracking.yml: " + e.getMessage());
         }
+    }
+
+    // ── Object methods ─────────────────────────────────────────────────────────
+
+    @Override
+    public String toString() {
+        return "WoodenSwordListener{plugin=" + plugin.getName()
+                + ", menuListener=" + menuListener + "}";
     }
 }
