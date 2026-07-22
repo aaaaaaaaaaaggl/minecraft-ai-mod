@@ -74,6 +74,24 @@ public class AIPlayerManager {
         LOGGER.info("AI despawned");
     }
 
+    public void followPlayer(Player player) {
+        if (fakePlayerNPC == null || !fakePlayerNPC.isSpawned()) {
+            player.sendMessage("§c🤖 Сначала призови AI бота.");
+            return;
+        }
+        fakePlayerNPC.startFollowing(player);
+        player.sendMessage("§a🤖 AI теперь следует за тобой.");
+    }
+
+    public void stopFollowing(Player player) {
+        if (fakePlayerNPC == null || !fakePlayerNPC.isSpawned()) {
+            player.sendMessage("§c🤖 AI не активен");
+            return;
+        }
+        fakePlayerNPC.stopFollowing();
+        player.sendMessage("§e🤖 AI остановился.");
+    }
+
     /**
      * Routes an AI chat command to the appropriate handler.
      *
@@ -100,6 +118,20 @@ public class AIPlayerManager {
                 despawnAI(player);
                 break;
 
+            case "следуй":
+            case "следуй за мной":
+            case "follow":
+                followPlayer(player);
+                break;
+
+            case "стоп":
+            case "остановись":
+            case "не следуй":
+            case "stop":
+            case "unfollow":
+                stopFollowing(player);
+                break;
+
             default:
                 player.sendMessage("§c🤖 Неизвестная команда AI: §e" + rawCommand);
                 sendHelp(player);
@@ -123,6 +155,6 @@ public class AIPlayerManager {
 
     /** Sends the list of available AI player commands to {@code player}. */
     private void sendHelp(Player player) {
-        player.sendMessage("§7Команды AI-игрока: §eai появись §7| §eai уходи");
+        player.sendMessage("§7Команды AI-игрока: §eai появись §7| §eai уходи §7| §eai follow §7| §eai stop");
     }
 }
