@@ -27,6 +27,7 @@ import java.util.logging.Logger;
  */
 public class FakePlayerNPC {
     private static final long ATTACK_INTERVAL_TICKS = 10L;
+    private static final long TARGET_SCAN_INTERVAL_TICKS = 4L;
     private static final double FOLLOW_START_DISTANCE = 3.0;
     private static final double FOLLOW_STOP_DISTANCE = 2.0;
     private static final double MELEE_ATTACK_DISTANCE = 2.5;
@@ -43,6 +44,8 @@ public class FakePlayerNPC {
     private UUID controllerUuid;
     private UUID followTargetUuid;
     private long attackCooldownTicks;
+    private long targetScanCooldownTicks;
+    private LivingEntity cachedAttackTarget;
 
     public FakePlayerNPC(JavaPlugin plugin, String npcName) {
         this.plugin  = plugin;
@@ -77,9 +80,8 @@ public class FakePlayerNPC {
 
         npc.spawn(loc);
         spawned = true;
+        resetBehaviorState();
         controllerUuid = nearPlayer.getUniqueId();
-        followTargetUuid = null;
-        attackCooldownTicks = 0L;
         startBehaviorTask();
         LOGGER.info("FakePlayerNPC '" + npcName + "' заспавнен рядом с " + nearPlayer.getName());
     }
@@ -99,9 +101,7 @@ public class FakePlayerNPC {
         npc.destroy();
         npc = null;
         spawned = false;
-        controllerUuid = null;
-        followTargetUuid = null;
-        attackCooldownTicks = 0L;
+        resetBehaviorState();
         LOGGER.info("FakePlayerNPC '" + npcName + "' удалён.");
     }
 
@@ -140,15 +140,29 @@ public class FakePlayerNPC {
         if (attackCooldownTicks > 0L) {
             attackCooldownTicks--;
         }
+        if (targetScanCooldownTicks > 0L) {
+            targetScanCooldownTicks--;
+        }
 
         AIBotSettings settings = controllerUuid != null ? AIBotSettings.load(controllerUuid) : null;
-        LivingEntity target = findAttackTarget(npcEntity, settings);
+        LivingEntity target = resolveAttackTarget(npcEntity, settings);
         if (target != null) {
             handleAttackTarget(npcEntity, target, settings);
             return;
         }
 
         handleFollowTarget(npcEntity);
+    }
+
+    private LivingEntity resolveAttackTarget(LivingEntity npcEntity, AIBotSettings settings) {
+        if (!isAttackTargetValid(npcEntity, settings, cachedAttackTarget)) {
+            cachedAttackTarget = null;
+        }
+        if (targetScanCooldownTicks <= 0L) {
+            cachedAttackTarget = findAttackTarget(npcEntity, settings);
+            targetScanCooldownTicks = TARGET_SCAN_INTERVAL_TICKS;
+        }
+        return cachedAttackTarget;
     }
 
     private LivingEntity findAttackTarget(LivingEntity npcEntity, AIBotSettings settings) {
@@ -201,6 +215,30 @@ public class FakePlayerNPC {
         return nearest;
     }
 
+    private boolean isAttackTargetValid(LivingEntity npcEntity, AIBotSettings settings, LivingEntity candidate) {
+        if (candidate == null || settings == null || candidate.isDead() || !candidate.isValid()) {
+            return false;
+        }
+        if (!npcEntity.getWorld().equals(candidate.getWorld()) || !npcEntity.hasLineOfSight(candidate)) {
+            return false;
+        }
+
+        double maxDistanceSquared = settings.getAttackRange() * settings.getAttackRange();
+        if (npcEntity.getLocation().distanceSquared(candidate.getLocation()) > maxDistanceSquared) {
+            return false;
+        }
+
+        if (candidate instanceof Player) {
+            if (!settings.isAttackPlayers()) {
+                return false;
+            }
+            UUID targetUuid = ((Player) candidate).getUniqueId();
+            return !targetUuid.equals(controllerUuid) && !targetUuid.equals(followTargetUuid);
+        }
+
+        return candidate instanceof Mob && settings.isAttackMobs();
+    }
+
     private void handleAttackTarget(LivingEntity npcEntity, LivingEntity target, AIBotSettings settings) {
         double distanceSquared = npcEntity.getLocation().distanceSquared(target.getLocation());
         double meleeDistanceSquared = MELEE_ATTACK_DISTANCE * MELEE_ATTACK_DISTANCE;
@@ -243,6 +281,14 @@ public class FakePlayerNPC {
                 && npc.getNavigator().isNavigating()) {
             npc.getNavigator().cancelNavigation();
         }
+    }
+
+    private void resetBehaviorState() {
+        controllerUuid = null;
+        followTargetUuid = null;
+        attackCooldownTicks = 0L;
+        targetScanCooldownTicks = 0L;
+        cachedAttackTarget = null;
     }
 
     private static boolean isCitizensAvailable() {
