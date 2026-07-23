@@ -56,7 +56,7 @@ public class FakePlayerNPC {
         this.npcName = npcName;
     }
 
-    // ── Public API ─────────────────────────────────────────────────────────────
+    // ── Public API ─────────────────────────────────────────────────────────[...]
 
     public boolean isSpawned() { return spawned; }
 
@@ -86,7 +86,7 @@ public class FakePlayerNPC {
         spawned = true;
         resetBehaviorState();
         controllerUuid = nearPlayer.getUniqueId();
-        npc.getNavigator().setSpeed(AIBotSettings.load(controllerUuid).getMovementSpeed());
+        npc.getNavigator().setMovementSpeed(AIBotSettings.load(controllerUuid).getMovementSpeed());
         startBehaviorTask();
         LOGGER.info("FakePlayerNPC '" + npcName + "' заспавнен рядом с " + nearPlayer.getName());
     }
@@ -127,10 +127,10 @@ public class FakePlayerNPC {
 
     public void applyMovementSpeed(double speed) {
         if (!spawned || npc == null) return;
-        npc.getNavigator().setSpeed(speed);
+        npc.getNavigator().setMovementSpeed(speed);
     }
 
-    // ── Utility ────────────────────────────────────────────────────────────────
+    // ── Utility ───────────────────────────────────────────────────────────[...]
 
     private void startBehaviorTask() {
         if (behaviorTask != null) {
@@ -259,7 +259,7 @@ public class FakePlayerNPC {
         double meleeDistanceSquared = MELEE_ATTACK_DISTANCE * MELEE_ATTACK_DISTANCE;
 
         if (distanceSquared > meleeDistanceSquared) {
-            npc.getNavigator().setSpeed(settings.getMovementSpeed() + ATTACK_SPEED_BONUS);
+            npc.getNavigator().setMovementSpeed(settings.getMovementSpeed() + ATTACK_SPEED_BONUS);
             npc.getNavigator().setTarget(target, false);
             return;
         }
@@ -292,7 +292,7 @@ public class FakePlayerNPC {
         double distanceSquared = npcEntity.getLocation().distanceSquared(followTarget.getLocation());
         if (distanceSquared > FOLLOW_START_DISTANCE * FOLLOW_START_DISTANCE) {
             if (settings != null) {
-                npc.getNavigator().setSpeed(settings.getMovementSpeed());
+                npc.getNavigator().setMovementSpeed(settings.getMovementSpeed());
             }
             npc.getNavigator().setTarget(followTarget, false);
         } else if (distanceSquared <= FOLLOW_STOP_DISTANCE * FOLLOW_STOP_DISTANCE
