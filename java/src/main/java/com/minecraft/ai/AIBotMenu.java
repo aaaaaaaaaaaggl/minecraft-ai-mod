@@ -44,9 +44,9 @@ public class AIBotMenu implements InventoryHolder {
     public static final int SLOT_SPAWN_CMD       = 12;
     public static final int SLOT_DESPAWN_CMD     = 13;
     public static final int SLOT_HEALTH_INFO     = 14;
-    public static final int SLOT_SEP_3           = 15;
-    public static final int SLOT_SEP_4           = 16;
-    public static final int SLOT_SEP_5           = 17;
+    public static final int SLOT_MOVEMENT_SPEED  = 15;
+    public static final int SLOT_SEP_3           = 16;
+    public static final int SLOT_SEP_4           = 17;
 
     public static final int SLOT_SEP_6           = 18;
     public static final int SLOT_SEP_7           = 19;
@@ -104,6 +104,7 @@ public class AIBotMenu implements InventoryHolder {
         inventory.setItem(SLOT_SPAWN_CMD,      makeSpawnCmd());
         inventory.setItem(SLOT_DESPAWN_CMD,    makeDespawnCmd());
         inventory.setItem(SLOT_HEALTH_INFO,    makeHealthInfo());
+        inventory.setItem(SLOT_MOVEMENT_SPEED, makeMovementSpeed());
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -129,7 +130,7 @@ public class AIBotMenu implements InventoryHolder {
         // ── Separators ───────────────────────────────────────────────────────
         ItemStack sep = makeSeparator();
         for (int s : new int[]{SLOT_SEP_1, SLOT_SEP_2, SLOT_SEP_3, SLOT_SEP_4,
-                               SLOT_SEP_5, SLOT_SEP_6, SLOT_SEP_7, SLOT_SEP_8,
+                               SLOT_SEP_6, SLOT_SEP_7, SLOT_SEP_8,
                                SLOT_SEP_9, SLOT_SEP_10}) {
             inventory.setItem(s, sep);
         }
@@ -323,6 +324,22 @@ public class AIBotMenu implements InventoryHolder {
                     "",
                     "§aСпавн §f— кнопка «Спавн AI_Bot»",
                     "§cДеспавн §f— кнопка «Деспавн AI_Bot»"));
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    private ItemStack makeMovementSpeed() {
+        ItemStack item = new ItemStack(Material.SUGAR);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(String.format("§fСкорость движения: §e%.1f", settings.getMovementSpeed()));
+            meta.setLore(Arrays.asList(
+                    "§7Скорость перемещения AI Bot.",
+                    "§7Диапазон: 0.5–5.0.",
+                    "",
+                    "§aЛевый клик §7— +0.5",
+                    "§cПравый клик §7— −0.5"));
             item.setItemMeta(meta);
         }
         return item;

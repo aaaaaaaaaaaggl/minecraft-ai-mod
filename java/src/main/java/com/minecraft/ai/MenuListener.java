@@ -153,6 +153,12 @@ public class MenuListener implements Listener {
                 }
                 break;
 
+            case AIBotMenu.SLOT_MOVEMENT_SPEED:
+                settings.setMovementSpeed(settings.getMovementSpeed() + (rightClick ? -0.5 : 0.5));
+                aiPlayerManager.applyMovementSpeed(settings.getMovementSpeed());
+                log(player, "movementSpeed", settings.getMovementSpeed());
+                break;
+
             // ── Control ───────────────────────────────────────────────────────
             case AIBotMenu.SLOT_SPAWN_BOT:
                 player.closeInventory();
