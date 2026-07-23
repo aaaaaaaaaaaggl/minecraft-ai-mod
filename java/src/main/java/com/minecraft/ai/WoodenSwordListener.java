@@ -1,5 +1,6 @@
 package com.minecraft.ai;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -100,11 +101,19 @@ public class WoodenSwordListener implements Listener {
         Action action = event.getAction();
         if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) return;
 
+        Player player = event.getPlayer();
         ItemStack item = event.getItem();
-        if (!isAIWoodenSword(item)) return;
+        LOGGER.info("[AI Bot] Sword click: player=" + player.getName()
+                + ", action=" + action
+                + ", hand=" + event.getHand()
+                + ", itemType=" + (item == null ? "null" : item.getType()));
+        boolean isAiSword = isAIWoodenSword(item);
+        LOGGER.info("[AI Bot] Sword recognition for " + player.getName() + ": " + isAiSword);
+        if (!isAiSword) return;
 
         event.setCancelled(true);
-        menuListener.openMenu(event.getPlayer());
+        LOGGER.info("[AI Bot] Opening AI menu for " + player.getName());
+        menuListener.openMenu(player);
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────
@@ -131,7 +140,11 @@ public class WoodenSwordListener implements Listener {
     public static boolean isAIWoodenSword(ItemStack item) {
         if (item == null || item.getType() != Material.WOODEN_SWORD) return false;
         ItemMeta meta = item.getItemMeta();
-        return meta != null && WOODEN_SWORD_NAME.equals(meta.getDisplayName());
+        if (meta == null || !meta.hasDisplayName()) return false;
+        String displayName = meta.getDisplayName();
+        if (WOODEN_SWORD_NAME.equals(displayName)) return true;
+        String stripped = ChatColor.stripColor(displayName);
+        return stripped != null && "AI".equalsIgnoreCase(stripped.trim());
     }
 
     // ── Persistence ────────────────────────────────────────────────────────────

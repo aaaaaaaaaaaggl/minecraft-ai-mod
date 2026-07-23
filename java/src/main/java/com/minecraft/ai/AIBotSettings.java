@@ -33,6 +33,7 @@ public class AIBotSettings {
     // ── Behaviour ────────────────────────────────────────────────────────────
     private String spawnCommand  = "";
     private String despawnCommand = "";
+    private double movementSpeed = 2.0;
 
     // ── Range / damage limits ─────────────────────────────────────────────────
 
@@ -43,6 +44,8 @@ public class AIBotSettings {
     /** Minimum and maximum allowed attack damage per hit. */
     private static final double MIN_ATTACK_DAMAGE  = 1.0;
     private static final double MAX_ATTACK_DAMAGE  = 20.0;
+    private static final double MIN_MOVEMENT_SPEED = 0.5;
+    private static final double MAX_MOVEMENT_SPEED = 5.0;
     private static File     dataFile;
     private static FileConfiguration data;
 
@@ -83,6 +86,7 @@ public class AIBotSettings {
         s.buildAround    = data.getBoolean(path + "buildAround",    false);
         s.spawnCommand   = data.getString( path + "spawnCommand",   "");
         s.despawnCommand = data.getString( path + "despawnCommand", "");
+        s.setMovementSpeed(data.getDouble(path + "movementSpeed", 2.0));
         return s;
     }
 
@@ -101,6 +105,7 @@ public class AIBotSettings {
         data.set(path + "buildAround",    buildAround);
         data.set(path + "spawnCommand",   spawnCommand);
         data.set(path + "despawnCommand", despawnCommand);
+        data.set(path + "movementSpeed",  movementSpeed);
         try {
             data.save(dataFile);
         } catch (IOException e) {
@@ -159,4 +164,12 @@ public class AIBotSettings {
 
     public String getDespawnCommand()           { return despawnCommand; }
     public void setDespawnCommand(String cmd)   { this.despawnCommand = cmd; }
+
+    public double getMovementSpeed() {
+        return movementSpeed;
+    }
+
+    public void setMovementSpeed(double speed) {
+        this.movementSpeed = Math.max(MIN_MOVEMENT_SPEED, Math.min(MAX_MOVEMENT_SPEED, speed));
+    }
 }

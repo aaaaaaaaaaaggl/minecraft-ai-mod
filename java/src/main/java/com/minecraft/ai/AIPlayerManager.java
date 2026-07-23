@@ -92,6 +92,13 @@ public class AIPlayerManager {
         player.sendMessage("§e🤖 AI остановился.");
     }
 
+    public void applyMovementSpeed(double speed) {
+        if (fakePlayerNPC == null || !fakePlayerNPC.isSpawned()) {
+            return;
+        }
+        fakePlayerNPC.applyMovementSpeed(speed);
+    }
+
     /**
      * Routes an AI chat command to the appropriate handler.
      *

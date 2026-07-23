@@ -32,6 +32,7 @@ public class FakePlayerNPC {
     private static final double FOLLOW_START_DISTANCE = 3.0;
     private static final double FOLLOW_STOP_DISTANCE = 2.0;
     private static final double MELEE_ATTACK_DISTANCE = 2.5;
+    private static final double ATTACK_SPEED_BONUS = 0.5;
 
     private static final Logger LOGGER = Logger.getLogger("FakePlayerNPC");
 
@@ -85,6 +86,7 @@ public class FakePlayerNPC {
         spawned = true;
         resetBehaviorState();
         controllerUuid = nearPlayer.getUniqueId();
+        npc.getNavigator().setSpeed(AIBotSettings.load(controllerUuid).getMovementSpeed());
         startBehaviorTask();
         LOGGER.info("FakePlayerNPC '" + npcName + "' заспавнен рядом с " + nearPlayer.getName());
     }
@@ -123,6 +125,11 @@ public class FakePlayerNPC {
         }
     }
 
+    public void applyMovementSpeed(double speed) {
+        if (!spawned || npc == null) return;
+        npc.getNavigator().setSpeed(speed);
+    }
+
     // ── Utility ────────────────────────────────────────────────────────────────
 
     private void startBehaviorTask() {
@@ -159,7 +166,7 @@ public class FakePlayerNPC {
             return;
         }
 
-        handleFollowTarget(npcEntity);
+        handleFollowTarget(npcEntity, settings);
     }
 
     private LivingEntity resolveAttackTarget(LivingEntity npcEntity, AIBotSettings settings) {
@@ -252,6 +259,7 @@ public class FakePlayerNPC {
         double meleeDistanceSquared = MELEE_ATTACK_DISTANCE * MELEE_ATTACK_DISTANCE;
 
         if (distanceSquared > meleeDistanceSquared) {
+            npc.getNavigator().setSpeed(settings.getMovementSpeed() + ATTACK_SPEED_BONUS);
             npc.getNavigator().setTarget(target, false);
             return;
         }
@@ -267,7 +275,7 @@ public class FakePlayerNPC {
         attackCooldownTicks = ATTACK_INTERVAL_TICKS;
     }
 
-    private void handleFollowTarget(LivingEntity npcEntity) {
+    private void handleFollowTarget(LivingEntity npcEntity, AIBotSettings settings) {
         if (followTargetUuid == null) {
             if (npc.getNavigator().isNavigating()) {
                 npc.getNavigator().cancelNavigation();
@@ -283,6 +291,9 @@ public class FakePlayerNPC {
 
         double distanceSquared = npcEntity.getLocation().distanceSquared(followTarget.getLocation());
         if (distanceSquared > FOLLOW_START_DISTANCE * FOLLOW_START_DISTANCE) {
+            if (settings != null) {
+                npc.getNavigator().setSpeed(settings.getMovementSpeed());
+            }
             npc.getNavigator().setTarget(followTarget, false);
         } else if (distanceSquared <= FOLLOW_STOP_DISTANCE * FOLLOW_STOP_DISTANCE
                 && npc.getNavigator().isNavigating()) {
